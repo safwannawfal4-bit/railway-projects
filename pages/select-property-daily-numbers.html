@@ -14,7 +14,7 @@
 const CONFIG = {
   client:'Select Property', brand:'itp-live', sheetUrl:null, currency:'USD',
   market:'UAE + KSA', vertical:'real-estate', language:'en', theme:'paper',
-  defaultPeriod:'flight', sharedLink:'reports.itplive.me/select-property',
+  defaultPeriod:'flight', accessCode:'SelectProperty-2026-UP7u',
   contact:'performance@itp.com', refreshMins:15, showFlags:true
 };
 </script>
@@ -49,15 +49,14 @@ html[data-theme="ink"] body::before{mix-blend-mode:screen;opacity:.18}
 html[data-theme="ink"] .mast img{filter:invert(1)}
 .mast-l{display:flex;align-items:flex-end;gap:13px}
 .mast-tag{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);padding-bottom:2px}
+.mk{width:26px;height:26px;color:var(--ink);fill:currentColor;display:block;flex:0 0 auto}
+.mast-div{align-self:stretch;width:1px;background:var(--rule);flex:0 0 auto}
 .ctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 button{font-family:var(--mono);font-size:10.5px;color:var(--ink);background:transparent;border:1px solid var(--rule);
   padding:5px 9px;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:background .15s,border-color .15s}
 button:hover{background:var(--paper-2);border-color:var(--ink-3)}
 button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .seg{display:flex}.seg button{border-right:0}.seg button:last-child{border-right:1px solid var(--rule)}
-.link-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule);padding:5px 9px;font-size:10.5px;color:var(--ink-2)}
-.link-pill b{font-weight:500;color:var(--ink)}
-.link-pill button{border:0;padding:0 0 0 2px;color:var(--pen)}
 .dateline{display:flex;flex-wrap:wrap;border-top:2px solid var(--rule-hard);border-bottom:1px solid var(--rule-hard);margin-top:8px}
 .dateline>div{padding:7px 15px 7px 0;margin-right:15px;border-right:1px solid var(--rule);
   font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
@@ -67,6 +66,35 @@ button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-colo
 .dot{width:6px;height:6px;border-radius:50%;background:var(--grow);animation:pulse 2.4s infinite}
 @keyframes pulse{0%{opacity:.35}50%{opacity:1}100%{opacity:.35}}
 .sample{color:var(--mark)}
+
+/* access gate */
+body.locked{overflow:hidden}
+body.locked .wrap{visibility:hidden}
+.gate{position:fixed;inset:0;z-index:60;background:var(--paper);padding:24px 18px;overflow-y:auto;display:none}
+body.locked .gate{display:flex;justify-content:center;align-items:center;align-items:safe center}
+.gate::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(var(--rule) .5px,transparent .5px);background-size:4px 4px;mix-blend-mode:multiply}
+html[data-theme="ink"] .gate::before{mix-blend-mode:screen;opacity:.18}
+.gate-card{position:relative;width:100%;max-width:390px;padding:26px 24px 20px;background:var(--paper);
+  border:1px solid var(--rule);border-top:2px solid var(--rule-hard)}
+.gate-card .mk{width:42px;height:42px;margin-bottom:18px}
+.gate-card h1{font-family:var(--serif);font-weight:400;font-size:25px;letter-spacing:-.01em;margin-top:5px}
+.gate-blurb{font-size:11px;color:var(--ink-2);line-height:1.65;margin-top:13px;padding-top:13px;border-top:1px solid var(--rule)}
+.gate-form{margin-top:17px}
+.gate-form label{display:block;margin-bottom:6px}
+.gate-row{display:flex}
+.gate-row input{flex:1 1 auto;min-width:0;font-family:var(--mono);font-size:13px;color:var(--ink);
+  background:var(--paper-2);border:1px solid var(--rule);border-right:0;padding:9px 10px}
+.gate-row input:focus{outline:0;border-color:var(--ink-3);background:var(--paper)}
+.gate-row input::placeholder{color:var(--ink-3)}
+.gate-row button{padding:9px 13px;white-space:nowrap}
+html[dir="rtl"] .gate-row input{border-right:1px solid var(--rule);border-left:0}
+.gate-err{font-size:10px;color:var(--stamp);line-height:1.6;margin-top:9px;min-height:1.6em}
+.gate-foot{font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);
+  margin-top:20px;padding-top:14px;border-top:1px solid var(--rule)}
+.gate-ctl{display:flex;gap:6px;margin-top:15px}
+.shake{animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 
 /* kpis */
 .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-bottom:1px solid var(--rule-hard)}
@@ -207,25 +235,51 @@ html[dir="rtl"] .flag{padding:11px 0 11px 18px;margin:0 0 0 18px;border-right:0;
 }
 @media print{
   body{padding:0;font-size:10px}body::before{display:none}
-  .ctl,.tip{display:none!important}
+  .ctl,.tip,.gate-ctl{display:none!important}
+  body.locked .wrap{display:none}
   .row.two,.row.three,.row.wide{grid-template-columns:minmax(0,1fr)}
   .row,.bench-grid,.cad{break-inside:avoid}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
-<body>
+<body class="locked">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="spmark" viewBox="0 0 39.2 39.2"><path d="M19.6,39.2C8.8,39.2,.0005,30.5,0,19.6-.0005,8.8,8.8,.0005,19.6,0c10.8-.0005,19.6,8.8,19.6,19.6v.0009c-.0119,10.8-8.8,19.6-19.6,19.6M19.6,1.4c-10.1,.0005-18.2,8.2-18.2,18.2,.0005,10.1,8.2,18.2,18.2,18.2,10.1-.0005,18.2-8.2,18.2-18.2-.0119-10.1-8.2-18.2-18.2-18.2"/><path d="M5.9,11.2L23.2,28h10.1L16,11.2H5.9Z"/><path d="M24.4,11.2c.035,2.5,2.1,4.4,4.5,4.4,2.4-.0343,4.4-2,4.4-4.4h-8.9Z"/><path d="M14.8,28c-.035-2.5-2.1-4.4-4.5-4.4-2.4,.0343-4.4,2-4.4,4.4H14.8Z"/></symbol></svg>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="gate-card" id="gateCard">
+    <svg class="mk" role="img" aria-label="Select Property"><use href="#spmark"/></svg>
+    <span class="lbl" id="gateEyebrow"></span>
+    <h1 id="gateTitle"></h1>
+    <p class="gate-blurb" id="gateBlurb"></p>
+    <form class="gate-form" id="gateForm" autocomplete="off" novalidate>
+      <label class="lbl" for="gateInput" id="gateLabel"></label>
+      <div class="gate-row">
+        <input id="gateInput" type="text" dir="ltr" spellcheck="false" autocapitalize="none"
+               autocorrect="off" autocomplete="off" aria-describedby="gateErr">
+        <button type="submit" id="gateBtn"></button>
+      </div>
+      <p class="gate-err" id="gateErr" role="alert" aria-live="polite"></p>
+    </form>
+    <p class="gate-foot" id="gateNote"></p>
+    <div class="gate-ctl">
+      <button type="button" id="gateLang">عربي</button>
+      <button type="button" id="gateTheme"></button>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
 
   <header class="mast">
     <div class="mast-l">
+      <svg class="mk" role="img" aria-label="Select Property"><use href="#spmark"/></svg>
+      <span class="mast-div"></span>
       <img src="data:image/png;base64,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" alt="ITP Live">
       <span class="mast-tag" id="tagPerf"></span>
     </div>
     <div class="ctl">
-      <span class="link-pill" title="Placeholder host. Swap for the real subdomain when the sheet goes live.">
-        <span id="lblShared"></span> <b id="sharedUrl"></b><button id="copyBtn" type="button">copy</button>
-      </span>
       <div class="seg" role="group">
         <button type="button" data-period="today" id="pToday"></button>
         <button type="button" data-period="7d" id="p7d"></button>
@@ -234,6 +288,7 @@ html[dir="rtl"] .flag{padding:11px 0 11px 18px;margin:0 0 0 18px;border-right:0;
       <button type="button" id="langBtn">عربي</button>
       <button type="button" id="themeBtn"></button>
       <button type="button" id="printBtn"></button>
+      <button type="button" id="signOutBtn"></button>
     </div>
   </header>
 
@@ -363,8 +418,12 @@ const SOURCES = [
 
 const T = {
   en:{tagPerf:'Performance Marketing', doc:'Daily Numbers', day:'Day {a} of {b}', live:'Refreshed {t}',
-    sample:'Sample data', shared:'Shared link', today:'Today', d7:'7 days', flight:'Flight',
-    theme:'Ink', themeAlt:'Paper', print:'Print',
+    sample:'Sample data', today:'Today', d7:'7 days', flight:'Flight',
+    theme:'Ink', themeAlt:'Paper', print:'Print', signOut:'Sign out',
+    gateBlurb:'This report is private. Enter the access code sent with your link.',
+    gateLabel:'Access code', gatePh:'Client-YYYY-XXXX', gateBtn:'Open report',
+    gateErr:'That code does not match. Check the code in your email, or ask us to resend it.',
+    gateNote:'Prepared by ITP Live · {c}',
     spent:'Spent', leads:'Leads', cpl:'Cost per lead', ctr:'Click rate', freq:'Frequency', qual:'Qualified',
     vsPrev:'vs previous', toDate:'flight to date',
     pSpent:'Spent', pBudget:'Budget', pPace:'Pace vs plan', pProj:'Projected spend', pProjLeads:'Projected leads', pProjCpl:'Projected cost per lead',
@@ -386,8 +445,12 @@ const T = {
     c1:'Data in', c2:'Checks', c3:'Actions', c4:'Qualified back',
     actNow:'act now', watch:'watch', working:'working', stale:'Sheet unreachable. Last pull {t}.'},
   ar:{tagPerf:'التسويق الأدائي', doc:'أرقام اليوم', day:'اليوم {a} من {b}', live:'آخر تحديث {t}',
-    sample:'بيانات نموذجية', shared:'رابط المشاركة', today:'اليوم', d7:'٧ أيام', flight:'الحملة',
-    theme:'داكن', themeAlt:'فاتح', print:'طباعة',
+    sample:'بيانات نموذجية', today:'اليوم', d7:'٧ أيام', flight:'الحملة',
+    theme:'داكن', themeAlt:'فاتح', print:'طباعة', signOut:'خروج',
+    gateBlurb:'هذا التقرير خاص. أدخل رمز الدخول المرسل مع الرابط.',
+    gateLabel:'رمز الدخول', gatePh:'Client-YYYY-XXXX', gateBtn:'عرض التقرير',
+    gateErr:'الرمز غير مطابق. تحقق من الرمز في بريدك أو اطلب إعادة إرساله.',
+    gateNote:'من إعداد ITP Live · {c}',
     spent:'المصروف', leads:'العملاء', cpl:'تكلفة العميل', ctr:'نسبة النقر', freq:'التكرار', qual:'المؤهلون',
     vsPrev:'مقابل السابق', toDate:'حتى الآن',
     pSpent:'المصروف', pBudget:'الميزانية', pPace:'الوتيرة', pProj:'المصروف المتوقع', pProjLeads:'العملاء المتوقعون', pProjCpl:'التكلفة المتوقعة',
@@ -827,12 +890,13 @@ function renderChrome(){
   document.documentElement.lang = L;
   document.documentElement.dir = L === 'ar' ? 'rtl' : 'ltr';
   const set = (id,v) => { const e = $(id); if(e) e.textContent = v; };
-  set('#tagPerf', t('tagPerf')); set('#lblShared', t('shared')); set('#sharedUrl', CONFIG.sharedLink);
+  set('#tagPerf', t('tagPerf'));
   set('#dlClient', CONFIG.client); set('#dlDoc', t('doc')); set('#dlDate', fmt.date(m.today));
   set('#dlDay', t('day',{a:m.dayN,b:m.flightDays}) + ' · ' + CONFIG.market);
   set('#dlLive', t('live',{t:fmt.clock(now)}));
   set('#dlSample', CONFIG.sheetUrl ? '' : t('sample'));
   set('#pToday', t('today')); set('#p7d', t('d7')); set('#pFlight', t('flight'));
+  set('#langBtn', L === 'ar' ? 'English' : 'عربي');
   set('#themeBtn', document.documentElement.dataset.theme === 'ink' ? t('themeAlt') : t('theme'));
   set('#printBtn', t('print'));
   ['hDaily','hCum','hByLine','hFunnel','hVs','hCre','hMkt','hPlace','hAge','hTable','hBench','hCad']
@@ -905,17 +969,65 @@ function renderAll(){
 }
 document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => {
   period = b.dataset.period; renderChrome(); renderKpis(); gByLine(); gFunnel(); renderTable(); }));
-$('#langBtn').addEventListener('click', () => { L = L === 'en' ? 'ar' : 'en'; renderAll(); });
-$('#themeBtn').addEventListener('click', () => { const h = document.documentElement;
+function themeLabel(){ return document.documentElement.dataset.theme === 'ink' ? t('themeAlt') : t('theme'); }
+function toggleLang(){ L = L === 'en' ? 'ar' : 'en'; renderAll(); renderGate(); }
+function toggleTheme(){ const h = document.documentElement;
   h.dataset.theme = h.dataset.theme === 'ink' ? 'paper' : 'ink';
-  $('#themeBtn').textContent = h.dataset.theme === 'ink' ? t('themeAlt') : t('theme'); });
+  $('#themeBtn').textContent = themeLabel(); $('#gateTheme').textContent = themeLabel(); }
+$('#langBtn').addEventListener('click', toggleLang);
+$('#gateLang').addEventListener('click', toggleLang);
+$('#themeBtn').addEventListener('click', toggleTheme);
+$('#gateTheme').addEventListener('click', toggleTheme);
 $('#printBtn').addEventListener('click', () => window.print());
-$('#copyBtn').addEventListener('click', async () => {
-  try{ await navigator.clipboard.writeText('https://'+CONFIG.sharedLink);
-    $('#copyBtn').textContent = L === 'ar' ? 'تم' : 'copied';
-    setTimeout(() => $('#copyBtn').textContent = 'copy', 1600); }catch(e){ $('#copyBtn').textContent = 'n/a'; }
+
+/* ---------- access gate ----------
+   A soft, client-side gate. The code below ships inside this page, so anyone
+   who views source can read it. It keeps the link from being casually passed
+   around; it is not authentication and must not be treated as such. */
+const GATE_KEY = 'spdn-open';
+function renderGate(){
+  const set = (id,v) => { const e = $(id); if(e) e.textContent = v; };
+  set('#gateEyebrow', CONFIG.client + ' · ' + t('tagPerf'));
+  set('#gateTitle', t('doc'));
+  set('#gateBlurb', t('gateBlurb'));
+  set('#gateLabel', t('gateLabel'));
+  set('#gateBtn', t('gateBtn'));
+  set('#gateNote', t('gateNote', {c: CONFIG.contact}));
+  set('#gateTheme', themeLabel());
+  set('#gateLang', L === 'ar' ? 'English' : 'عربي');
+  set('#signOutBtn', t('signOut'));
+  $('#gateInput').setAttribute('placeholder', t('gatePh'));
+}
+function openReport(){
+  document.body.classList.remove('locked');
+  $('#gateErr').textContent = '';
+  $('#gateInput').value = '';
+}
+function lockReport(){
+  try{ sessionStorage.removeItem(GATE_KEY); }catch(e){}
+  document.body.classList.add('locked');
+  window.scrollTo(0,0);
+  $('#gateInput').focus();
+}
+$('#gateForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const given = $('#gateInput').value.trim().toLowerCase();
+  if(given === CONFIG.accessCode.trim().toLowerCase()){
+    try{ sessionStorage.setItem(GATE_KEY, '1'); }catch(e){}
+    openReport();
+  } else {
+    $('#gateErr').textContent = t('gateErr');
+    $('#gateInput').select();
+    const c = $('#gateCard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+  }
 });
+$('#signOutBtn').addEventListener('click', lockReport);
+
 document.documentElement.dataset.theme = CONFIG.theme;
+renderGate();
+let wasOpen = false;
+try{ wasOpen = sessionStorage.getItem(GATE_KEY) === '1'; }catch(e){}
+if(wasOpen) openReport(); else $('#gateInput').focus();
 (async () => { const live = await loadLive(); if(live) DATA.days = live; renderAll(); })();
 setInterval(async () => { const live = await loadLive(); if(live) DATA.days = live; renderAll(); }, CONFIG.refreshMins*60000);
 </script>
