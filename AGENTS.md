@@ -93,6 +93,25 @@ In the Railway dashboard, inside the **same project**:
 Build and start commands come from `<page-name>/railway.json` — no need to set
 them in the dashboard.
 
+### Troubleshooting a failed deploy
+
+**"Nixpacks was unable to generate a build plan" / no start command found.**
+The service's **Root Directory** is unset, so Railway is building the repo
+root. The root has no `package.json` on purpose — it is not deployable. Set
+Root Directory to `/<page-name>`.
+
+**Connecting the repo only created one service.** Expected: one repo connection
+= one service. Railway does not discover directories. Add a service per page,
+each with its own Root Directory. The repo can be connected many times over,
+once per service.
+
+**A push redeployed every service.** A `railway.json` is missing its
+`build.watchPatterns`, or the pattern does not match its own directory.
+
+**Healthcheck fails but the build succeeded.** The start command must serve on
+`$PORT` and bind `0.0.0.0`, and `/healthz` must return 200. Reproduce locally
+with `PORT=3000 npm start` and `curl localhost:3000/healthz`.
+
 ### Agents: you cannot deploy without credentials
 
 Creating services and reading back live URLs needs Railway API access. If
