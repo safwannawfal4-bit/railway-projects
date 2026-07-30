@@ -98,6 +98,9 @@
         color: var(--muted);
         font-size: 0.8125rem;
       }
+      footer a {
+        color: var(--ok);
+      }
       code {
         font-family: ui-monospace, "SF Mono", Menlo, monospace;
         background: var(--card);
@@ -109,21 +112,22 @@
   </head>
   <body>
     <main>
-      <span class="badge"><span class="dot"></span>Service is up</span>
+      <span class="badge"><span class="dot"></span>Deploy is live</span>
       <h1>hello-world</h1>
       <p class="lede">
-        Smoke test for the one-page-per-service pattern. If you can read this,
-        the build, the start command, and the healthcheck all work.
+        Smoke test for the deploy. If you can read this, the build, the start
+        command, and the healthcheck all work.
       </p>
       <dl>
-        <div class="row"><dt>Service</dt><dd>hello-world</dd></div>
+        <div class="row"><dt>Page</dt><dd>/hello-world</dd></div>
+        <div class="row"><dt>Source</dt><dd>pages/hello-world.html</dd></div>
         <div class="row"><dt>Host</dt><dd id="host">—</dd></div>
         <div class="row"><dt>Loaded at</dt><dd id="loaded">—</dd></div>
         <div class="row"><dt>Healthcheck</dt><dd id="health">checking…</dd></div>
       </dl>
       <footer>
-        Sibling service: <code>unit-converter</code>. Two directories, two
-        Railway services, two URLs.
+        <a href="/">All pages</a> · Drop a file in <code>pages/</code> and it
+        gets its own link on the next push.
       </footer>
     </main>
     <script>

@@ -1,8 +1,8 @@
 {
-  "name": "PAGE_NAME",
+  "name": "railway-projects",
   "version": "1.0.0",
   "private": true,
-  "description": "Single-page HTML app served as its own Railway service.",
+  "description": "Single-page HTML apps, each served at its own path.",
   "scripts": {
     "start": "node server.js"
   },

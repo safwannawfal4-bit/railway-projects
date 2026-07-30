@@ -1,0 +1,79 @@
+<!doctype html>
+<!--
+  Starter for a new page. Copy it to pages/<name>.html and it goes live at
+  /<name> on the next push.
+
+  This file is NOT published: the router only serves names starting with a
+  letter or digit, so anything beginning with "_" is ignored. Use that for
+  drafts too — pages/_wip.html stays private.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PAGE_TITLE</title>
+    <style>
+      :root {
+        --bg: #faf9f7;
+        --fg: #17161a;
+        --muted: #6b6870;
+        --line: #e3e0da;
+        --card: #fff;
+        --accent: #b8452f;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131215;
+          --fg: #f2f0ee;
+          --muted: #9a969f;
+          --line: #2c2a30;
+          --card: #1b1a1f;
+          --accent: #ff8a6b;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: start center;
+        padding: 3rem 1.5rem;
+        background: var(--bg);
+        color: var(--fg);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 34rem;
+      }
+      h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.75rem, 6vw, 2.25rem);
+        letter-spacing: -0.02em;
+      }
+      p.lede {
+        margin: 0 0 2rem;
+        color: var(--muted);
+      }
+      footer {
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.8125rem;
+      }
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>PAGE_TITLE</h1>
+      <p class="lede">Replace this with the page.</p>
+      <footer><a href="/">All pages</a></footer>
+    </main>
+  </body>
+</html>
