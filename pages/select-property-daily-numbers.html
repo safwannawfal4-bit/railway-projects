@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Select Property · Daily Numbers · ITP Live</title>
+<!--
+  ITP LIVE · DAILY NUMBERS  (charts only build)
+  Same palette and type as the full sheet. Prose removed on purpose:
+  labels, figures and graphs only.
+  Set CONFIG.sheetUrl to a published CSV to go live.
+-->
+<script>
+const CONFIG = {
+  client:'Select Property', brand:'itp-live', sheetUrl:null, currency:'USD',
+  market:'UAE + KSA', vertical:'real-estate', language:'en', theme:'paper',
+  defaultPeriod:'flight', sharedLink:'reports.itplive.me/select-property',
+  contact:'performance@itp.com', refreshMins:15, showFlags:true
+};
+</script>
+<style>
+:root{
+  --paper:#F1EDE3; --paper-2:#E9E3D6; --paper-3:#DFD8C7;
+  --ink:#16130F; --ink-2:#4C463C; --ink-3:#8A8274;
+  --rule:#CDC4B1; --rule-hard:#16130F;
+  --stamp:#A82E1C; --pen:#24476B; --mark:#9C6B12; --grow:#3D6B3F;
+  --serif:'Newsreader',Georgia,serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --maxw:1400px;
+}
+html[data-theme="ink"]{
+  --paper:#12100D; --paper-2:#1A1713; --paper-3:#221E19;
+  --ink:#F2EDE1; --ink-2:#B4AB99; --ink-3:#7A7263;
+  --rule:#332D25; --rule-hard:#F2EDE1;
+  --stamp:#E06A52; --pen:#7FA8D1; --mark:#D9A63F; --grow:#7BB07E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:13px;line-height:1.5;
+  padding:0 clamp(12px,3vw,40px) 50px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:radial-gradient(var(--rule) .5px,transparent .5px);background-size:4px 4px;mix-blend-mode:multiply}
+html[data-theme="ink"] body::before{mix-blend-mode:screen;opacity:.18}
+.wrap{max-width:var(--maxw);margin:0 auto;position:relative;z-index:1}
+.lbl{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* masthead */
+.mast{padding:20px 0 8px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.mast img{height:24px;width:auto;display:block}
+html[data-theme="ink"] .mast img{filter:invert(1)}
+.mast-l{display:flex;align-items:flex-end;gap:13px}
+.mast-tag{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);padding-bottom:2px}
+.ctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+button{font-family:var(--mono);font-size:10.5px;color:var(--ink);background:transparent;border:1px solid var(--rule);
+  padding:5px 9px;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:background .15s,border-color .15s}
+button:hover{background:var(--paper-2);border-color:var(--ink-3)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg{display:flex}.seg button{border-right:0}.seg button:last-child{border-right:1px solid var(--rule)}
+.link-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--rule);padding:5px 9px;font-size:10.5px;color:var(--ink-2)}
+.link-pill b{font-weight:500;color:var(--ink)}
+.link-pill button{border:0;padding:0 0 0 2px;color:var(--pen)}
+.dateline{display:flex;flex-wrap:wrap;border-top:2px solid var(--rule-hard);border-bottom:1px solid var(--rule-hard);margin-top:8px}
+.dateline>div{padding:7px 15px 7px 0;margin-right:15px;border-right:1px solid var(--rule);
+  font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.dateline>div:last-child{border-right:0;margin-right:0}
+.dateline b{color:var(--ink);font-weight:600}
+.live{display:inline-flex;align-items:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--grow);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{opacity:.35}50%{opacity:1}100%{opacity:.35}}
+.sample{color:var(--mark)}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-bottom:1px solid var(--rule-hard)}
+.kpi{padding:16px 16px 14px;border-right:1px solid var(--rule)}
+.kpi:last-child{border-right:0}
+.kpi .k-lbl{display:flex;align-items:center;gap:5px;margin-bottom:10px}
+.kpi .v{font-size:clamp(22px,2.2vw,31px);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
+.kpi .sub{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.delta{font-size:10px}
+.up{color:var(--grow)}.down{color:var(--stamp)}.flat{color:var(--ink-3)}
+.pin{width:5px;height:5px;border-radius:50%;flex:0 0 auto}
+.pin.good{background:var(--grow)}.pin.warn{background:var(--mark)}.pin.bad{background:var(--stamp)}
+.spark{width:100%;height:22px;display:block;margin-top:10px;overflow:visible}
+
+/* flags: severity + metric + value, nothing more */
+.flags{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--rule-hard)}
+.flag{display:flex;align-items:center;gap:9px;padding:11px 18px 11px 0;margin-right:18px;
+  border-right:1px solid var(--rule)}
+.flag:last-child{border-right:0;margin-right:0}
+.stamp{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid currentColor;
+  padding:2px 5px;transform:rotate(-1.2deg);font-weight:600;white-space:nowrap}
+.stamp.bad{color:var(--stamp)}.stamp.warn{color:var(--mark)}.stamp.good{color:var(--grow)}
+.flag .fv{font-size:12.5px;font-variant-numeric:tabular-nums}
+.flag .fk{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+/* pacing */
+.pacing{padding:18px 0 22px;border-bottom:2px solid var(--rule-hard)}
+.pace-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:11px}
+.pace-figs{display:flex;gap:26px;flex-wrap:wrap}
+.pace-figs>div span{display:block}
+.pace-figs .v{font-size:17px;font-weight:500;font-variant-numeric:tabular-nums;margin-top:3px}
+.pace-bar{position:relative;height:24px;background:var(--paper-2);border:1px solid var(--rule)}
+.pace-fill{position:absolute;inset:0 auto 0 0;background:var(--ink);opacity:.86}
+.pace-proj{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--ink-3) 0 1px,transparent 1px 6px)}
+.pace-mark{position:absolute;top:-6px;bottom:-6px;width:1px;background:var(--stamp)}
+.pace-mark span{position:absolute;top:-14px;left:0;transform:translateX(-50%);font-size:9px;color:var(--stamp);white-space:nowrap}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:9px;font-size:9.5px;color:var(--ink-3)}
+.legend i{display:inline-block;width:11px;height:3px;margin-right:5px;vertical-align:middle}
+
+/* panels */
+.row{display:grid;gap:0;border-bottom:2px solid var(--rule-hard)}
+.row.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.row.wide{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.pane{padding:20px 30px 22px 0;border-right:1px solid var(--rule);min-width:0}
+.pane:last-child{border-right:0;padding-right:0}
+.row.two .pane:last-child,.row.three .pane:last-child,.row.wide .pane:last-child{padding-left:30px}
+.row.three .pane:nth-child(2){padding-left:30px}
+.p-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+.p-h h2{font-family:var(--serif);font-weight:400;font-size:16px;letter-spacing:-.005em}
+.p-h .m{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+svg.g{width:100%;display:block;overflow:visible}
+svg.g text{font-family:var(--mono);font-size:9px;fill:var(--ink-3)}
+svg.g .gl{stroke:var(--rule);stroke-width:1}
+svg.g .axis{stroke:var(--rule-hard);stroke-width:1;opacity:.6}
+svg.g .bar{fill:var(--ink);opacity:.22}
+svg.g .bar.hot{opacity:.46}
+svg.g .ln{fill:none;stroke:var(--stamp);stroke-width:1.75}
+svg.g .ln2{fill:none;stroke:var(--pen);stroke-width:1.5;stroke-dasharray:4 3}
+svg.g .pt{fill:var(--stamp)}
+svg.g .ref{stroke:var(--pen);stroke-width:1;stroke-dasharray:3 3}
+svg.g .val{fill:var(--ink);font-weight:500}
+svg.g .hb{fill:var(--ink);opacity:.8}
+svg.g .hb.alt{fill:var(--pen);opacity:.75}
+svg.g .hb.warnb{fill:var(--mark);opacity:.85}
+svg.g .hb.badb{fill:var(--stamp);opacity:.85}
+svg.g .track{fill:var(--paper-3)}
+svg.g .tick{stroke:var(--stamp);stroke-width:1.5}
+.chartbox{position:relative}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);padding:7px 9px;
+  font-size:10px;line-height:1.55;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:5}
+
+/* table */
+.tablewrap{overflow-x:auto;max-width:100%}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);text-align:right;
+  padding:0 0 7px;border-bottom:1px solid var(--rule-hard);font-weight:400;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:8px 0;border-bottom:1px solid var(--rule);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:hover td{background:var(--paper-2)}
+tfoot td{border-bottom:0;border-top:1px solid var(--rule-hard);font-weight:600;padding-top:9px}
+
+/* benchmark cells */
+.bench-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.bm{background:var(--paper);padding:14px 15px}
+.bm-row{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.bm-row .ours{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.bm-row .theirs{font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.bm-scale{height:4px;background:var(--paper-3);position:relative;margin-top:11px}
+.bm-scale i{position:absolute;top:0;bottom:0;background:var(--ink-3);opacity:.5}
+.bm-scale u{position:absolute;top:-4px;bottom:-4px;width:2px;text-decoration:none}
+details{margin-top:14px}
+summary{cursor:pointer;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+details ul{margin:10px 0 0 16px;font-size:10px;color:var(--ink-3);line-height:1.7}
+
+/* cadence strip: times and labels only */
+.cad{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.cad div{background:var(--paper);padding:13px 15px}
+.cad .t{font-size:11px;color:var(--stamp);font-variant-numeric:tabular-nums}
+.cad h4{font-family:var(--serif);font-size:15px;font-weight:400;margin-top:5px}
+
+footer{margin-top:26px;display:flex;justify-content:space-between;align-items:flex-end;gap:26px;flex-wrap:wrap}
+footer p{font-size:10px;color:var(--ink-3);line-height:1.7}
+.backlink{margin-top:7px}
+.backlink a{color:var(--pen);text-decoration:none;border-bottom:1px solid var(--rule)}
+.backlink a:hover{color:var(--ink);border-bottom-color:var(--ink-3)}
+.foot-sp svg{width:118px;height:auto;color:var(--ink-3);display:block}
+.foot-sp .cap{font-size:9px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+
+html[dir="rtl"] th,html[dir="rtl"] td{text-align:left}
+html[dir="rtl"] th:first-child,html[dir="rtl"] td:first-child{text-align:right}
+html[dir="rtl"] .pane{padding:20px 0 22px 30px;border-right:0;border-left:1px solid var(--rule)}
+html[dir="rtl"] .pane:last-child{border-left:0;padding-left:0;padding-right:30px}
+html[dir="rtl"] .dateline>div{padding:7px 0 7px 15px;margin:0 0 0 15px;border-right:0;border-left:1px solid var(--rule)}
+html[dir="rtl"] .flag{padding:11px 0 11px 18px;margin:0 0 0 18px;border-right:0;border-left:1px solid var(--rule)}
+.ltr{direction:ltr}
+
+@media (max-width:1080px){
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi{border-bottom:1px solid var(--rule)}
+  .kpi:nth-child(3n){border-right:0}
+  .kpi:nth-child(n+4){border-bottom:0}
+  .row.two,.row.three,.row.wide{grid-template-columns:minmax(0,1fr)}
+  .pane{padding:20px 0 22px!important;border-right:0;border-bottom:1px solid var(--rule)}
+  .pane:last-child{border-bottom:0}
+  html[dir="rtl"] .pane{border-left:0}
+  .bench-grid,.cad{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(2n){border-right:0}
+  .kpi:nth-child(n+3){border-bottom:1px solid var(--rule)}
+  .kpi:nth-child(n+5){border-bottom:0}
+  .bench-grid,.cad{grid-template-columns:minmax(0,1fr)}
+  .flag{border-right:0;margin-right:0;width:100%}
+  table{font-size:10.5px}th{font-size:8.5px}
+}
+@media print{
+  body{padding:0;font-size:10px}body::before{display:none}
+  .ctl,.tip{display:none!important}
+  .row.two,.row.three,.row.wide{grid-template-columns:minmax(0,1fr)}
+  .row,.bench-grid,.cad{break-inside:avoid}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="mast-l">
+      <img src="data:image/png;base64,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" alt="ITP Live">
+      <span class="mast-tag" id="tagPerf"></span>
+    </div>
+    <div class="ctl">
+      <span class="link-pill" title="Placeholder host. Swap for the real subdomain when the sheet goes live.">
+        <span id="lblShared"></span> <b id="sharedUrl"></b><button id="copyBtn" type="button">copy</button>
+      </span>
+      <div class="seg" role="group">
+        <button type="button" data-period="today" id="pToday"></button>
+        <button type="button" data-period="7d" id="p7d"></button>
+        <button type="button" data-period="flight" id="pFlight"></button>
+      </div>
+      <button type="button" id="langBtn">عربي</button>
+      <button type="button" id="themeBtn"></button>
+      <button type="button" id="printBtn"></button>
+    </div>
+  </header>
+
+  <div class="dateline">
+    <div><b id="dlClient"></b></div>
+    <div><b id="dlDoc"></b></div>
+    <div id="dlDate"></div>
+    <div id="dlDay"></div>
+    <div><span class="live"><i class="dot"></i> <span id="dlLive"></span></span></div>
+    <div class="sample" id="dlSample"></div>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+  <section class="flags" id="flags"></section>
+
+  <section class="pacing">
+    <div class="pace-head">
+      <div class="pace-figs" id="paceFigs"></div>
+    </div>
+    <div class="pace-bar" id="paceBar"></div>
+    <div class="legend" id="paceLegend"></div>
+  </section>
+
+  <section class="row wide">
+    <div class="pane">
+      <div class="p-h"><h2 id="hDaily"></h2><span class="m" id="mDaily"></span></div>
+      <div class="chartbox"><svg class="g" id="gDaily" viewBox="0 0 720 230" preserveAspectRatio="none" style="height:230px"></svg><div class="tip" id="tip"></div></div>
+      <div class="legend" id="lgDaily"></div>
+    </div>
+    <div class="pane">
+      <div class="p-h"><h2 id="hCum"></h2></div>
+      <svg class="g" id="gCum" viewBox="0 0 460 230" preserveAspectRatio="none" style="height:230px"></svg>
+      <div class="legend" id="lgCum"></div>
+    </div>
+  </section>
+
+  <section class="row two">
+    <div class="pane">
+      <div class="p-h"><h2 id="hByLine"></h2><span class="m" id="mByLine"></span></div>
+      <svg class="g" id="gByLine" viewBox="0 0 560 200" preserveAspectRatio="none" style="height:200px"></svg>
+      <div class="legend" id="lgByLine"></div>
+    </div>
+    <div class="pane">
+      <div class="p-h"><h2 id="hFunnel"></h2></div>
+      <svg class="g" id="gFunnel" viewBox="0 0 560 200" preserveAspectRatio="none" style="height:200px"></svg>
+    </div>
+  </section>
+
+  <section class="row two">
+    <div class="pane">
+      <div class="p-h"><h2 id="hVs"></h2><span class="m" id="mVs"></span></div>
+      <svg class="g" id="gVs" viewBox="0 0 560 210" preserveAspectRatio="none" style="height:210px"></svg>
+      <div class="legend" id="lgVs"></div>
+    </div>
+    <div class="pane">
+      <div class="p-h"><h2 id="hCre"></h2><span class="m" id="mCre"></span></div>
+      <svg class="g" id="gCre" viewBox="0 0 560 210" preserveAspectRatio="none" style="height:210px"></svg>
+      <div class="legend" id="lgCre"></div>
+    </div>
+  </section>
+
+  <section class="row three">
+    <div class="pane">
+      <div class="p-h"><h2 id="hMkt"></h2></div>
+      <svg class="g" id="gMkt" viewBox="0 0 300 190" preserveAspectRatio="xMidYMid meet" style="height:190px"></svg>
+    </div>
+    <div class="pane">
+      <div class="p-h"><h2 id="hPlace"></h2></div>
+      <svg class="g" id="gPlace" viewBox="0 0 340 190" preserveAspectRatio="none" style="height:190px"></svg>
+    </div>
+    <div class="pane">
+      <div class="p-h"><h2 id="hAge"></h2></div>
+      <svg class="g" id="gAge" viewBox="0 0 340 190" preserveAspectRatio="none" style="height:190px"></svg>
+    </div>
+  </section>
+
+  <section class="row" style="grid-template-columns:minmax(0,1fr)">
+    <div class="pane" style="padding-right:0">
+      <div class="p-h"><h2 id="hTable"></h2><span class="m" id="mTable"></span></div>
+      <div class="tablewrap"><table><thead><tr id="ltHead"></tr></thead><tbody id="ltBody"></tbody><tfoot id="ltFoot"></tfoot></table></div>
+    </div>
+  </section>
+
+  <section class="row" style="grid-template-columns:minmax(0,1fr)">
+    <div class="pane" style="padding-right:0">
+      <div class="p-h"><h2 id="hBench"></h2><span class="m" id="mBench"></span></div>
+      <div class="bench-grid" id="benchGrid"></div>
+      <details><summary id="lblSources"></summary><ul id="sourceList"></ul></details>
+    </div>
+  </section>
+
+  <section style="padding:20px 0 0">
+    <div class="p-h"><h2 id="hCad"></h2></div>
+    <div class="cad" id="cad"></div>
+  </section>
+
+  <footer>
+    <div>
+      <p id="footStamp"></p>
+      <p class="backlink"><a href="/">All pages</a></p>
+    </div>
+    <div class="foot-sp">
+      <div class="cap" id="lblPreparedFor"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-label="Select Property" viewBox="0 0 200 39.2"><g><path d="M63,25.9c-.3209,.6241-.775,1.2-1.3,1.6-.6029,.4621-1.3,.7979-2,.9873-.8428,.2198-1.7,.3269-2.6,.3186-.691,.0085-1.4-.0407-2.1-.1472-.4851-.077-.9624-.1972-1.4-.359-.2936-.1017-.5775-.2297-.8481-.3823-.1082-.0786-.2299-.1367-.359-.1714-.0485,0-.1562,.0969-.3186,.2944s-.3114,.3859-.4434,.5663h-.2217l-.0727-4.9h.2459c.1494,.4467,.3389,.879,.5663,1.3,.2237,.4094,.4741,.8036,.7494,1.2,.2545,.3513,.5431,.6766,.8616,.9711,.2621,.2496,.5553,.4644,.8724,.639,.3562,.1784,.7266,.3267,1.1,.4434,1.5,.4729,3.1,.182,4.3-.7754,.7619-.6824,1.2-1.7,1.1-2.7,.0087-.4124-.0668-.8222-.2217-1.2-.1417-.3352-.3468-.64-.604-.8975-.2646-.2615-.5672-.4815-.8975-.6525-.3587-.1866-.7286-.3508-1.1-.4918-.3931-.1472-.7374-.2698-1-.368-.2944-.0987-.5708-.193-.8239-.2836s-.5161-.1795-.7871-.2692-.595-.21-.9711-.359c-.4383-.1694-.852-.3964-1.2-.6749-.391-.2849-.7389-.6247-1-1-.2989-.39-.5407-.8207-.718-1.3-.1812-.4753-.2725-.9802-.2692-1.5-.021-.7901,.1451-1.6,.4847-2.3,.3105-.6231,.7557-1.2,1.3-1.6,.5614-.4339,1.2-.7551,1.9-.946,.7323-.2085,1.5-.3125,2.3-.3087,.6363-.0107,1.3,.0516,1.9,.1858,.4414,.0962,.8733,.2317,1.3,.4048,.2671,.11,.5226,.2462,.7629,.4066,.0885,.0705,.1834,.1324,.2836,.1849,.0485,0,.1517-.0987,.3078-.2962s.2989-.3922,.4308-.5897h.2692v4.6h-.2692c-.2053-.5589-.4607-1.1-.7629-1.6-.3005-.5185-.6644-.9976-1.1-1.4-.4045-.4164-.8763-.7617-1.4-1-.5429-.2663-1.1-.401-1.7-.3931-.4874-.0033-.9723,.0715-1.4,.2217-.4351,.1374-.837,.3635-1.2,.6642-.3415,.3009-.6109,.6748-.788,1.1-.1956,.4713-.2915,.9779-.2818,1.5-.0363,.7747,.247,1.5,.7835,2.1,.5797,.5619,1.3,.9907,2,1.3,.3258,.1319,.6336,.2459,.9199,.3446s.5681,.193,.8472,.2836,.5591,.1849,.8454,.2836,.5852,.2046,.8975,.3186c1,.3411,1.9,.9593,2.6,1.8,.6325,.8368,.9574,1.9,.9199,2.9,.0128,.7334-.1516,1.5-.4793,2.1" ></path><path d="M74.4,26.2c-.2399,.4635-.5561,.8834-.9352,1.2-.4149,.3911-.8948,.7069-1.4,.9334-.5781,.2518-1.2,.3775-1.8,.3689-.7866,.0098-1.6-.1494-2.3-.4667-.6767-.3026-1.3-.7521-1.8-1.3-.4955-.5874-.875-1.3-1.1-2-.2655-.7801-.3984-1.6-.3931-2.4,.011-1.4,.5101-2.8,1.4-3.9,.4567-.5449,1-.9929,1.7-1.3,.6667-.3397,1.4-.5124,2.2-.5035,.6114-.0034,1.2,.0794,1.8,.2459,.537,.1502,1,.4055,1.5,.7512,.4249,.3459,.7723,.7774,1,1.3,.2756,.5606,.4347,1.2,.4676,1.8h-7.9c0,.1319-.009,.2836-.0242,.455s-.0242,.3491-.0242,.5295c-.0025,.671,.0968,1.3,.2944,2,.1832,.6056,.4752,1.2,.8616,1.7,.3806,.4845,.8677,.8748,1.4,1.1,.6236,.2892,1.3,.432,2,.4173,.7654,.0159,1.5-.2034,2.2-.6283,.5682-.3582,.9984-.8982,1.2-1.5l.1957,.0485c-.0887,.4253-.2377,.8357-.4425,1.2m-2.8-8.3c-.4448-.4452-1.1-.6821-1.7-.6525-.4473-.0036-.8835,.1391-1.2,.4066-.3649,.2667-.6885,.5858-.9603,.9469-.2561,.3358-.4673,.7036-.6283,1.1-.1181,.2735-.2083,.5583-.2692,.8499h1c.2962,0,.5876-.0042,.8742-.0126l.8975-.0242c.3105-.0084,.6549-.0126,1-.0126,.2459,0,.4748-.0072,.6884-.0242,.194-.0117,.385-.0532,.5663-.123,.1011-.1115,.1877-.2355,.2576-.3689,.0675-.1633,.0981-.3395,.0897-.5161,.0089-.5841-.2176-1.1-.6283-1.6" ></path><path d="M74.6,28.7v-.2692c.5088-.0068,1-.0857,1.5-.2342,.2307-.0832,.3803-.307,.3689-.552V13.5c.0044-.1001-.0081-.2002-.0368-.2962-.0483-.091-.1207-.1671-.2091-.2199-.1472-.0814-.3686-.2088-.6642-.3823-.2381-.1421-.4844-.2697-.7377-.3823v-.1499l3.5-1.2h.1714V27.7c-.0102,.1323,.0295,.2635,.1113,.368,.0888,.0914,.2046,.1521,.3303,.1732,.1866,.0372,.3761,.0579,.5663,.0619,.2304,.0084,.4996,.029,.8078,.0619v.2692l-5.7-.0009Z" ></path><path d="M90.2,26.2c-.2399,.4635-.5561,.8834-.9352,1.2-.4135,.391-.8918,.7071-1.4,.9343-.5781,.2518-1.2,.3775-1.8,.3689-.7866,.0098-1.6-.1494-2.3-.4667-.6771-.3025-1.3-.752-1.8-1.3-.4955-.5874-.875-1.3-1.1-2-.2655-.7801-.3984-1.6-.3931-2.4,.0105-1.4,.5093-2.8,1.4-3.9,.456-.5446,1-.9926,1.6-1.3,.6667-.3397,1.4-.5124,2.2-.5035,.6114-.0034,1.2,.0794,1.8,.2459,.537,.1502,1,.4055,1.5,.7512,.4249,.3459,.7723,.7774,1,1.3,.2756,.5606,.4347,1.2,.4676,1.8h-7.9c0,.1319-.009,.2836-.0242,.455s-.0242,.3491-.0242,.5295c-.0025,.671,.0968,1.3,.2944,2,.1832,.6056,.4752,1.2,.8616,1.7,.3814,.4848,.8694,.8751,1.4,1.1,.6236,.2892,1.3,.432,2,.4173,.7654,.0159,1.5-.2034,2.2-.6283,.5678-.3602,.9968-.9021,1.2-1.5l.1957,.0485c-.0887,.4253-.2377,.8357-.4425,1.2m-2.8-8.3c-.4448-.4452-1.1-.6821-1.7-.6525-.447-.0034-.8829,.1393-1.2,.4066-.3649,.2667-.6885,.5858-.9603,.9469-.2561,.3358-.4673,.7036-.6283,1.1-.1181,.2735-.2083,.5583-.2692,.8499h1c.2962,0,.5876-.0042,.8742-.0126l.8975-.0242c.3105-.0084,.6549-.0126,1-.0126,.2459,0,.4748-.0072,.6884-.0242,.194-.0117,.385-.0532,.5663-.123,.1011-.1115,.1877-.2355,.2576-.3689,.0675-.1633,.0981-.3395,.0897-.5161,.0088-.5841-.2176-1.1-.6283-1.6" ></path><path d="M101.4,26.5c-.2994,.4399-.6647,.831-1.1,1.2-.4306,.3391-.9163,.6014-1.4,.7754-.5593,.1842-1.1,.2751-1.7,.2692-.7538,.0069-1.5-.1482-2.2-.455-.6605-.2947-1.2-.7313-1.7-1.3-.4888-.5695-.8686-1.2-1.1-1.9-.2741-.7572-.4118-1.6-.4066-2.4-.0037-.7698,.1385-1.5,.4191-2.2,.2651-.6945,.6571-1.3,1.2-1.9,.4961-.5446,1.1-.9872,1.8-1.3,.695-.3307,1.5-.4986,2.2-.4909,.5391-.0001,1.1,.0656,1.6,.1957,.4926,.1183,.965,.3088,1.4,.5654,.3922,.2302,.7314,.5406,.9953,.911,.2574,.3677,.3912,.8077,.3823,1.3,.0018,.7048-.5681,1.3-1.3,1.3-.2722,.0007-.5375-.0857-.7572-.2465-.2103-.1491-.3625-.3663-.4308-.6148,.0886-.2697,.1302-.5527,.123-.8365,.0205-.5444-.1489-1.1-.4793-1.5-.3809-.428-.9414-.6512-1.5-.6022-.4949-.0042-.981,.1318-1.4,.3922-.439,.2729-.8169,.6334-1.1,1.1-.3267,.4739-.5757,.9968-.7377,1.5-.1833,.6144-.274,1.3-.2693,1.9-.008,.6879,.0913,1.4,.2944,2,.1749,.5734,.459,1.1,.8365,1.6,.356,.4317,.8057,.7767,1.3,1,.5451,.2449,1.1,.3675,1.7,.359,.8335,.0403,1.7-.1336,2.4-.5053,.6125-.3607,1.1-.8748,1.5-1.5l.1957,.0969c-.1487,.4948-.3727,.9637-.6641,1.4" ></path><path d="M109.7,18.5h-3.7v6.5c-.0591,.6529,.1335,1.3,.5385,1.8,.3654,.3797,.8753,.5856,1.4,.5663,.4063,.0152,.8105-.0651,1.2-.2342,.3272-.1694,.6066-.4185,.8122-.7243l.1472,.0727c-.111,.27-.2471,.529-.4066,.7736-.1841,.2846-.4172,.5344-.6884,.7377-.3036,.2296-.645,.4043-1,.5161-.4432,.1312-.9039,.1935-1.4,.1849-.3355,.0008-.6689-.0528-.9872-.1589-.307-.1015-.592-.2601-.8401-.4676-.2348-.1956-.4358-.4285-.595-.6893-.1478-.2313-.228-.4992-.2316-.7736,0-1.5,.0087-3,.026-4.4,.0174-1.4,.0254-2.6,.0242-3.7h-1.8v-.2693l3.5-3.4h.1948v2.1h4.6l-.762,1.5Z" ></path><path d="M125.7,17.7c-.1853,.474-.4473,.9142-.7754,1.3-.3209,.3795-.6981,.7076-1.1,.9729-.4102,.2624-.847,.4805-1.3,.6507-.4793,.1695-.9737,.293-1.5,.3689-.5247,.0832-1.1,.1448-1.6,.1849s-1.1,.0607-1.6,.0619h-1.3v2.3c0,.2773,0,.5385,.0126,.7736s.0117,.4963,.0117,.7754c.0162,.525,.0332,.9756,.0485,1.4,.0029,.3304,.096,.6538,.2693,.9352,.1988,.272,.461,.4913,.7638,.639,.4895,.2412,1,.3674,1.6,.3689v.2459h-7.9v-.2459c.4013-.0639,.7963-.163,1.2-.2962,.3451-.1088,.6522-.3133,.8858-.5897,.0969-.1317,.1637-.283,.1957-.4434,.0537-.2183,.0909-.4403,.1113-.6642,.0242-.2459,.044-.508,.0619-.7871s.0242-.5493,.0242-.8078c0-.2304,.0042-.5421,.0126-.9352,.0084-.3931,.0165-.8236,.0242-1.3,.009-.4667,.0126-.9469,.0126-1.4v-6.2c0-.295-.0042-.5941-.0126-.8975-.009-.3016-.0242-.5897-.0485-.8598-.0215-.2488-.0627-.4954-.123-.7377-.0353-.1773-.116-.3425-.2342-.4793-.2547-.2683-.5849-.4529-.9469-.5295-.3847-.0903-.7988-.1681-1.2-.2334v-.2468h.5906c.3105,0,.6752-.0042,1.1-.0126,.4188-.0084,.8739-.0123,1.4-.0117,.4918,0,.9798-.0042,1.5-.0126,.484-.0084,.9391-.0129,1.4-.0135h1.1c.9618-.0063,1.9,.0473,2.9,.1607,.829,.1046,1.6,.3673,2.4,.7736,.7279,.4005,1.3,.9757,1.8,1.7,.487,.7626,.7351,1.7,.7126,2.6,.0077,.563-.0922,1.1-.2944,1.6m-3.1-4.3c-.7026-1.1-1.9-1.9-3.2-2-.4562-.0667-.9166-.0997-1.4-.0987-.2671-.0039-.5341,.0084-.7997,.0368-.1885,.0242-.3402,.0458-.455,.0619-.0143,.0873-.035,.1734-.0619,.2576-.029,.0925-.0497,.1874-.0619,.2836-.0162,.1158-.0332,.2764-.0485,.4811s-.0332,.4945-.0503,.8724c-.0156,.5738-.0275,1.3-.0359,2.1-.0099,.8212-.0126,1.6-.0126,2.4v3.2c.6713,0,1.3-.0215,1.9-.0628,.5626-.034,1.1-.1457,1.6-.3321,.9798-.3088,1.8-.9362,2.4-1.8,.5555-.8243,.847-1.8,.8356-2.8,.0154-.8978-.237-1.8-.7252-2.5" ></path><path d="M134.7,19c-.1803,.2235-.4507,.3551-.7377,.359-.2176,.0101-.4341-.0366-.6282-.1355-.1479-.0848-.2842-.1882-.4057-.3078-.1132-.1138-.2367-.2168-.3689-.3078-.1619-.098-.3495-.1452-.5385-.1355-.2097,.0053-.4119,.0787-.5762,.2091-.2,.1513-.3782,.3295-.5295,.5295-.1721,.226-.3207,.469-.4434,.7252-.1301,.2693-.245,.5295-.3437,.7754v7.1c.0544,.1537,.1696,.2784,.3186,.3446,.1749,.0847,.3616,.1425,.5538,.1714,.2116,.0334,.425,.0541,.639,.0619,.194,.0055,.3872,.0262,.578,.0619v.2459h-5.5v-.2522c.3333-.0223,.6611-.0972,.9711-.2217,.2455-.078,.4107-.3079,.4066-.5654v-8.3c.0041-.0995-.0083-.199-.0368-.2944-.0481-.0916-.1205-.1683-.2091-.2217-.1472-.0817-.3204-.1849-.5161-.3078-.1885-.1179-.3859-.2208-.5906-.3078v-.1472l3.2-1.3h.149l-.0503,3.4h.0503c.0817-.1957,.2127-.4838,.3931-.8598,.1943-.4015,.4247-.7845,.6884-1.1,.2796-.3852,.6204-.722,1-.9971,.3957-.2787,.8695-.4248,1.4-.4173,.3818-.0101,.7539,.1213,1,.3689,.2797,.229,.4389,.5737,.4317,.9352,.0113,.329-.1033,.65-.3204,.8975" ></path><path d="M146,25c-.2964,.7223-.7222,1.4-1.3,2-.5171,.5528-1.1,.9965-1.8,1.3-.6923,.3106-1.4,.47-2.2,.4676-.6784-.0063-1.4-.1227-2-.3446-1.5-.498-2.7-1.6-3.3-3-.3865-.8616-.5757-1.8-.5538-2.7-.0008-.7508,.1455-1.5,.4308-2.2,.5685-1.4,1.7-2.6,3.1-3.2,1.4-.6109,3-.6549,4.4-.123,.6739,.2468,1.3,.618,1.8,1.1,.5685,.5098,1,1.1,1.4,1.8,.3693,.8052,.5504,1.7,.5295,2.6,.0042,.8149-.1548,1.6-.4676,2.4m-2-4.2c-.1148-.6161-.3176-1.2-.6022-1.8-.2647-.5236-.6431-.9815-1.1-1.3-.4897-.3624-1.1-.5489-1.7-.5295-.5258-.0054-1,.1681-1.5,.4918-.4477,.3527-.8197,.7919-1.1,1.3-.3151,.5619-.547,1.2-.6884,1.8-.1561,.6648-.2347,1.3-.2342,2-.0034,.7179,.0627,1.4,.1975,2.1,.1138,.6258,.3297,1.2,.639,1.8,.2742,.4942,.6621,.916,1.1,1.2,.4916,.3125,1.1,.471,1.6,.455,.5907,.0174,1.2-.189,1.6-.578,.4494-.4054,.8095-.9,1.1-1.5,.2769-.6003,.4754-1.2,.5906-1.9,.1177-.6163,.1796-1.2,.1849-1.9-.0047-.6028-.0666-1.2-.1849-1.8" ></path><path d="M158.6,24.7c-.3043,.7651-.7682,1.5-1.4,2-.6209,.5857-1.4,1-2.2,1.3-.9203,.3328-1.9,.4958-2.9,.4811-.295,0-.5855-.0081-.8715-.0242-.3019-.0177-.602-.0588-.8975-.123,0,.2289,0,.5654,.0117,1s.017,.911,.0242,1.4,.0126,.9756,.0126,1.5v1.2c.0322,.1473,.132,.2707,.2693,.333,.1683,.0798,.3463,.1374,.5295,.1714,.2109,.0437,.4243,.0736,.639,.0898,.2199,.0162,.4137,.0332,.578,.0485v.2692h-6.1v-.2692c.1633-.0162,.359-.044,.5897-.0898,.2207-.0386,.4387-.0917,.6525-.1589,.1833-.0559,.3572-.1387,.5161-.2459,.1233-.0723,.2019-.2019,.2091-.3446v-13.6c.0051-.0995-.0074-.1992-.0368-.2944-.0478-.0919-.1202-.1687-.2091-.2217-.1472-.0814-.3847-.201-.7126-.359-.3279-.158-.5903-.2776-.7871-.359v-.1472l3.6-1.4h.149v2.8l.0242,.0485c.2292-.3117,.4823-.6312,.7593-.9585,.2792-.3304,.5917-.6311,.9325-.8975,.3462-.2699,.7241-.4963,1.1-.674,.4131-.1826,.8605-.2744,1.3-.2693,.6953-.0178,1.4,.1432,2,.4676,.5513,.3006,1,.7204,1.4,1.2,.3744,.5207,.6531,1.1,.823,1.7,.1788,.6322,.2694,1.3,.2693,1.9,.0076,.8759-.1551,1.7-.4793,2.6m-2-3.6c-.1321-.5109-.3606-.9919-.6731-1.4-.3052-.4036-.6992-.7316-1.2-.9585-.5067-.2476-1.1-.3707-1.6-.359-.3923-.0069-.7812,.0731-1.1,.2342-.3097,.1386-.5985,.3199-.858,.5385-.2135,.1777-.3955,.3901-.5385,.6283-.0938,.1403-.1551,.2997-.1795,.4667,0,.3294,0,.6767-.0126,1s-.0117,.692-.0117,.9711v1.6c0,.3761,.0072,.7539,.0242,1.1,.0355,.3597,.0928,.717,.1714,1.1,.0766,.3582,.2177,.6994,.4164,1,.2022,.3105,.4802,.5644,.8078,.7377,.4101,.2043,.8651,.3018,1.3,.2836,.4848-.0032,.9594-.1391,1.4-.3931,.46-.2794,.8597-.6477,1.2-1.1,.3636-.4994,.6411-1.1,.8212-1.6,.2098-.677,.313-1.4,.3061-2.1,.0046-.5894-.0693-1.2-.2199-1.7" ></path><path d="M170.3,26.2c-.2399,.4635-.5561,.8834-.9352,1.2-.4135,.391-.8918,.7071-1.4,.9343-.5781,.2518-1.2,.3775-1.8,.3689-.7866,.0098-1.6-.1494-2.3-.4667-.6767-.3026-1.3-.7521-1.8-1.3-.4955-.5874-.875-1.3-1.1-2-.2655-.7801-.3984-1.6-.3931-2.4,.011-1.4,.5101-2.8,1.4-3.9,.4561-.544,1-.9913,1.6-1.3,.6667-.3397,1.4-.5124,2.2-.5035,.6114-.0034,1.2,.0794,1.8,.2459,.537,.1502,1,.4055,1.5,.7512,.4249,.3459,.7723,.7774,1,1.3,.2756,.5606,.4347,1.2,.4676,1.8h-7.9c0,.1319-.009,.2836-.0242,.455s-.0242,.3491-.0242,.5295c-.0025,.671,.0968,1.3,.2944,2,.1832,.6056,.4752,1.2,.8616,1.7,.3817,.4838,.8697,.8732,1.4,1.1,.6236,.2892,1.3,.432,2,.4173,.7654,.0159,1.5-.2034,2.2-.6283,.5678-.3602,.9968-.9021,1.2-1.5l.1957,.0485c-.0887,.4253-.2377,.8357-.4425,1.2m-2.8-8.3c-.4448-.4452-1.1-.6821-1.7-.6525-.447-.0034-.8829,.1393-1.2,.4066-.3649,.2667-.6885,.5858-.9603,.9469-.2562,.3358-.4674,.7036-.6282,1.1-.1181,.2735-.2083,.5583-.2693,.8499h1c.2962,0,.5876-.0042,.8742-.0126l.8975-.0242c.3105-.0084,.6549-.0126,1-.0126,.2459,0,.4748-.0072,.6884-.0242,.194-.0117,.385-.0532,.5663-.123,.1011-.1115,.1877-.2355,.2576-.3689,.0675-.1633,.0981-.3395,.0897-.5161,.0089-.5841-.2175-1.1-.6282-1.6" ></path><path d="M179,19c-.1803,.2235-.4507,.3551-.7377,.359-.2176,.0101-.4341-.0366-.6282-.1355-.1476-.0848-.2836-.1883-.4048-.3078-.1132-.1138-.2367-.2168-.3689-.3078-.1619-.098-.3495-.1452-.5385-.1355-.2097,.0053-.4119,.0787-.5762,.2091-.2,.1513-.3782,.3295-.5295,.5295-.1721,.226-.3207,.469-.4434,.7252-.1301,.2693-.245,.5295-.3437,.7754v7.1c.0544,.1537,.1696,.2784,.3186,.3446,.1749,.0847,.3616,.1425,.5538,.1714,.2116,.0334,.425,.0541,.639,.0619,.194,.0055,.3872,.0262,.578,.0619v.2459h-5.5v-.2522c.3333-.0223,.6611-.0971,.9711-.2217,.2455-.078,.4107-.3079,.4066-.5654v-8.3c.0041-.0995-.0083-.199-.0368-.2944-.0481-.0916-.1205-.1683-.2091-.2217-.1472-.0817-.3204-.1849-.5161-.3078-.1885-.1179-.3859-.2208-.5906-.3078v-.1472l3.2-1.3h.149l-.0503,3.4h.0503c.0817-.1957,.2127-.4838,.3931-.8598,.1943-.4015,.4247-.7845,.6884-1.1,.2796-.3852,.6204-.722,1-.9971,.3957-.2787,.8695-.4248,1.4-.4173,.3818-.0101,.7539,.1213,1,.3689,.2797,.229,.4389,.5737,.4317,.9352,.0113,.329-.1033,.65-.3204,.8975" ></path><path d="M187.5,18.5h-3.7v6.5c-.0592,.6529,.1334,1.3,.5385,1.8,.3654,.3797,.8753,.5856,1.4,.5663,.4063,.015,.8105-.0652,1.2-.2342,.3273-.1694,.6066-.4185,.8122-.7243l.1472,.0727c-.111,.27-.2471,.529-.4066,.7736-.1841,.2846-.4172,.5344-.6884,.7377-.3036,.2296-.645,.4043-1,.5161-.4432,.1312-.9039,.1935-1.4,.1849-.3355,.0008-.6689-.0528-.9873-.1589-.307-.1015-.592-.2602-.8401-.4676-.2348-.1956-.4358-.4284-.595-.6893-.1478-.2313-.228-.4992-.2316-.7736,0-1.5,.0087-3,.026-4.4,.0174-1.4,.0254-2.6,.0242-3.7h-1.8v-.2693l3.5-3.4h.1948v2.1h4.6l-.762,1.5Z" ></path><path d="M199.4,17.4c-.1842,.0168-.3653,.0582-.5385,.123-.173,.067-.3285,.1722-.455,.3078-.1503,.1744-.2598,.3801-.3204,.6022-.0817,.263-.2118,.6812-.3931,1.3s-.3922,1.3-.639,2l-.8077,2.6c-.295,.9358-.5941,1.9-.8975,2.9-.3034,.9843-.6082,2-.9146,2.9-.3046,.9669-.5953,1.9-.8724,2.8-.1344,.5258-.4263,.998-.8365,1.4-.3109,.2599-.7006,.407-1.1,.4173-.3294,.0002-.6495-.109-.9101-.3105-.2664-.1819-.4238-.4852-.4191-.8078-.0113-.3018,.0949-.5961,.2962-.8212,.2022-.2168,.4891-.3345,.7853-.3222,.3026-.0097,.5975,.0969,.8239,.298,.2217,.1992,.4488,.4066,.6785,.622h.0476c.1795-.4422,.3398-.8804,.4811-1.3,.1412-.4344,.2642-.8278,.3689-1.2,.1059-.3536,.1921-.6528,.2585-.8975,.0646-.2459,.1041-.4102,.1212-.4918-.0317-.0658-.1215-.2989-.2693-.6992-.149-.4021-.3366-.9181-.5663-1.5s-.4918-1.3-.788-2.1-.5932-1.6-.8975-2.4-.6004-1.6-.8975-2.4-.5654-1.5-.8077-2.2c-.1486-.1642-.3279-.2977-.5277-.3931-.3679-.1287-.7546-.1955-1.1-.1975v-.2693h5.4v.2693c-.3044,.0396-.6047,.1056-.8975,.1975-.253,.0786-.4137,.3266-.3823,.5897,.0276,.2054,.077,.4073,.1472,.6022,.0987,.3204,.2289,.718,.3949,1.2s.3464,.9971,.552,1.6,.4093,1.1,.6166,1.7,.4066,1.1,.6004,1.7,.3707,.9953,.5179,1.4c.0476-.1301,.1391-.4093,.2693-.8365s.289-.9298,.4676-1.5,.3707-1.2,.5654-1.8,.3787-1.2,.5385-1.8,.2989-1,.4048-1.5c.076-.2451,.1298-.4965,.1607-.7512,.0065-.1307-.0368-.259-.1212-.359-.0921-.0961-.2064-.1679-.333-.2091-.1474-.0504-.3001-.0835-.455-.0987-.1642-.0162-.3204-.0314-.4667-.0485v-.2693h3.8v.2693l-.5762,.0485" ></path><path d="M19.6,39.2C8.8,39.2,.0005,30.5,0,19.6-.0005,8.8,8.8,.0005,19.6,0c10.8-.0005,19.6,8.8,19.6,19.6v.0009c-.0119,10.8-8.8,19.6-19.6,19.6M19.6,1.4c-10.1,.0005-18.2,8.2-18.2,18.2,.0005,10.1,8.2,18.2,18.2,18.2,10.1-.0005,18.2-8.2,18.2-18.2-.0119-10.1-8.2-18.2-18.2-18.2" ></path><path d="M5.9,11.2L23.2,28h10.1L16,11.2H5.9Z" ></path><path d="M24.4,11.2c.035,2.5,2.1,4.4,4.5,4.4,2.4-.0343,4.4-2,4.4-4.4h-8.9Z" ></path><path d="M14.8,28c-.035-2.5-2.1-4.4-4.5-4.4-2.4,.0343-4.4,2-4.4,4.4H14.8Z" ></path></g></svg>
+    </div>
+  </footer>
+</div>
+
+<script>
+const DATA = {"meta":{"flightStart":"2026-07-12","flightEnd":"2026-08-10","today":"2026-07-30","dayN":19,"flightDays":30,"netBudget":4545.45,"grossBudget":5000,"refreshDay":15},"lines":[{"id":"L1","label":"Creator posts, native form","short":"Creator native","platform":"Meta","share":0.4,"planCpl":22.0,"form":"native"},{"id":"L2","label":"Brand creative, native form","short":"Brand native","platform":"Meta","share":0.25,"planCpl":28.0,"form":"native"},{"id":"L3","label":"Website form via CAPI","short":"Website form","platform":"Meta","share":0.2,"planCpl":42.0,"form":"site"},{"id":"L4","label":"Retargeting, warm pool","short":"Retargeting","platform":"Meta","share":0.07,"planCpl":30.0,"form":"native"},{"id":"L5","label":"Spark Ads test","short":"TikTok Spark","platform":"TikTok","share":0.08,"planCpl":32.0,"form":"native"}],"days":[{"d":1,"dt":"2026-07-12","r":[{"l":"L1","s":40.2,"i":4466,"c":75,"ld":1.3,"q":0.28,"f":1.15},{"l":"L2","s":25.89,"i":2353,"c":31,"ld":0.64,"q":0.13,"f":1.23},{"l":"L3","s":19.27,"i":1482,"c":17,"ld":0.32,"q":0.13,"f":1.27},{"l":"L5","s":8.16,"i":1359,"c":12,"ld":0.14,"q":0.02,"f":1.15}]},{"d":2,"dt":"2026-07-13","r":[{"l":"L1","s":41.95,"i":4661,"c":78,"ld":1.25,"q":0.29,"f":1.3},{"l":"L2","s":27.47,"i":2498,"c":36,"ld":0.7,"q":0.14,"f":1.46},{"l":"L3","s":19.58,"i":1506,"c":18,"ld":0.33,"q":0.16,"f":1.49},{"l":"L5","s":7.87,"i":1312,"c":12,"ld":0.13,"q":0.02,"f":1.3}]},{"d":3,"dt":"2026-07-14","r":[{"l":"L1","s":41.49,"i":4610,"c":72,"ld":1.54,"q":0.35,"f":1.47},{"l":"L2","s":26.41,"i":2401,"c":32,"ld":0.74,"q":0.16,"f":1.66},{"l":"L3","s":20.47,"i":1575,"c":20,"ld":0.39,"q":0.19,"f":1.75},{"l":"L5","s":7.95,"i":1325,"c":12,"ld":0.15,"q":0.03,"f":1.45}]},{"d":4,"dt":"2026-07-15","r":[{"l":"L1","s":57.55,"i":6394,"c":112,"ld":2.09,"q":0.46,"f":1.63},{"l":"L2","s":34.45,"i":3132,"c":41,"ld":0.94,"q":0.2,"f":1.84},{"l":"L3","s":26.08,"i":2006,"c":25,"ld":0.48,"q":0.22,"f":2.01},{"l":"L5","s":11.74,"i":1956,"c":18,"ld":0.23,"q":0.05,"f":1.57}]},{"d":5,"dt":"2026-07-16","r":[{"l":"L1","s":56.38,"i":6265,"c":108,"ld":2.38,"q":0.62,"f":1.78},{"l":"L2","s":34.72,"i":3157,"c":41,"ld":1.13,"q":0.25,"f":2.02},{"l":"L3","s":28.45,"i":2189,"c":28,"ld":0.6,"q":0.26,"f":2.23},{"l":"L5","s":10.97,"i":1829,"c":15,"ld":0.31,"q":0.06,"f":1.69}]},{"d":6,"dt":"2026-07-17","r":[{"l":"L1","s":53.17,"i":5907,"c":92,"ld":2.33,"q":0.59,"f":1.95},{"l":"L2","s":33.04,"i":3004,"c":41,"ld":1.12,"q":0.25,"f":2.21},{"l":"L3","s":26.24,"i":2019,"c":25,"ld":0.58,"q":0.29,"f":2.5},{"l":"L5","s":11.65,"i":1942,"c":17,"ld":0.33,"q":0.06,"f":1.82}]},{"d":7,"dt":"2026-07-18","r":[{"l":"L1","s":62.38,"i":6931,"c":121,"ld":2.53,"q":0.56,"f":2.13},{"l":"L2","s":37.97,"i":3452,"c":46,"ld":1.29,"q":0.27,"f":2.4},{"l":"L3","s":32.22,"i":2478,"c":28,"ld":0.73,"q":0.33,"f":2.74},{"l":"L5","s":12.49,"i":2082,"c":20,"ld":0.36,"q":0.07,"f":1.94}]},{"d":8,"dt":"2026-07-19","r":[{"l":"L1","s":63.77,"i":7086,"c":119,"ld":2.95,"q":0.65,"f":2.29},{"l":"L2","s":42.0,"i":3818,"c":55,"ld":1.5,"q":0.33,"f":2.58},{"l":"L3","s":31.34,"i":2411,"c":28,"ld":0.78,"q":0.37,"f":3.01},{"l":"L5","s":11.95,"i":1991,"c":17,"ld":0.4,"q":0.07,"f":2.08}]},{"d":9,"dt":"2026-07-20","r":[{"l":"L1","s":62.21,"i":6912,"c":107,"ld":3.05,"q":0.68,"f":2.45},{"l":"L2","s":37.55,"i":3414,"c":44,"ld":1.4,"q":0.32,"f":2.78},{"l":"L3","s":32.33,"i":2487,"c":29,"ld":0.82,"q":0.37,"f":3.3},{"l":"L4","s":20.76,"i":1730,"c":35,"ld":0.74,"q":0.27,"f":1.26},{"l":"L5","s":12.67,"i":2111,"c":18,"ld":0.41,"q":0.07,"f":2.23}]},{"d":10,"dt":"2026-07-21","r":[{"l":"L1","s":62.23,"i":6915,"c":119,"ld":2.99,"q":0.67,"f":2.62},{"l":"L2","s":37.12,"i":3374,"c":47,"ld":1.31,"q":0.26,"f":2.98},{"l":"L3","s":32.01,"i":2462,"c":30,"ld":0.82,"q":0.42,"f":3.58},{"l":"L4","s":22.24,"i":1853,"c":35,"ld":0.75,"q":0.24,"f":1.55},{"l":"L5","s":12.13,"i":2022,"c":18,"ld":0.38,"q":0.08,"f":2.37}]},{"d":11,"dt":"2026-07-22","r":[{"l":"L1","s":66.26,"i":7362,"c":126,"ld":3.19,"q":0.84,"f":2.8},{"l":"L2","s":44.52,"i":4047,"c":58,"ld":1.59,"q":0.35,"f":3.21},{"l":"L3","s":32.64,"i":2511,"c":30,"ld":0.8,"q":0.33,"f":3.82},{"l":"L4","s":21.08,"i":1757,"c":33,"ld":0.74,"q":0.25,"f":1.88},{"l":"L5","s":14.44,"i":2407,"c":23,"ld":0.47,"q":0.1,"f":2.51}]},{"d":12,"dt":"2026-07-23","r":[{"l":"L1","s":72.2,"i":8023,"c":128,"ld":2.92,"q":0.66,"f":2.98},{"l":"L2","s":40.62,"i":3693,"c":52,"ld":1.31,"q":0.3,"f":3.41},{"l":"L3","s":35.56,"i":2735,"c":34,"ld":0.74,"q":0.36,"f":4.06},{"l":"L4","s":21.26,"i":1771,"c":36,"ld":0.61,"q":0.21,"f":2.14},{"l":"L5","s":14.05,"i":2342,"c":20,"ld":0.39,"q":0.08,"f":2.63}]},{"d":13,"dt":"2026-07-24","r":[{"l":"L1","s":66.29,"i":7365,"c":128,"ld":2.57,"q":0.6,"f":3.13},{"l":"L2","s":41.84,"i":3804,"c":54,"ld":1.25,"q":0.25,"f":3.63},{"l":"L3","s":32.17,"i":2474,"c":31,"ld":0.7,"q":0.34,"f":4.3},{"l":"L4","s":21.45,"i":1788,"c":36,"ld":0.61,"q":0.21,"f":2.41},{"l":"L5","s":13.29,"i":2215,"c":19,"ld":0.36,"q":0.06,"f":2.75}]},{"d":14,"dt":"2026-07-25","r":[{"l":"L1","s":72.35,"i":8039,"c":133,"ld":2.84,"q":0.74,"f":3.32},{"l":"L2","s":42.03,"i":3821,"c":55,"ld":1.27,"q":0.25,"f":3.86},{"l":"L3","s":32.76,"i":2520,"c":30,"ld":0.7,"q":0.33,"f":4.57},{"l":"L4","s":21.81,"i":1817,"c":33,"ld":0.64,"q":0.23,"f":2.69},{"l":"L5","s":13.3,"i":2216,"c":20,"ld":0.37,"q":0.08,"f":2.87}]},{"d":15,"dt":"2026-07-26","r":[{"l":"L1","s":63.53,"i":7059,"c":116,"ld":2.61,"q":0.63,"f":2.51},{"l":"L2","s":40.28,"i":3662,"c":50,"ld":1.43,"q":0.28,"f":2.93},{"l":"L3","s":29.89,"i":2299,"c":27,"ld":0.65,"q":0.3,"f":3.46},{"l":"L4","s":22.03,"i":1836,"c":35,"ld":0.69,"q":0.23,"f":2.15},{"l":"L5","s":12.95,"i":2158,"c":18,"ld":0.37,"q":0.07,"f":2.16}]},{"d":16,"dt":"2026-07-27","r":[{"l":"L1","s":61.98,"i":6887,"c":117,"ld":3.17,"q":0.76,"f":2.71},{"l":"L2","s":40.5,"i":3682,"c":53,"ld":1.55,"q":0.32,"f":3.16},{"l":"L3","s":32.63,"i":2510,"c":30,"ld":0.85,"q":0.41,"f":3.72},{"l":"L4","s":21.22,"i":1768,"c":34,"ld":0.77,"q":0.28,"f":2.43},{"l":"L5","s":13.21,"i":2201,"c":21,"ld":0.44,"q":0.08,"f":2.31}]},{"d":17,"dt":"2026-07-28","r":[{"l":"L1","s":64.78,"i":7198,"c":124,"ld":3.1,"q":0.69,"f":2.88},{"l":"L2","s":38.02,"i":3457,"c":45,"ld":1.5,"q":0.3,"f":3.36},{"l":"L3","s":30.2,"i":2323,"c":29,"ld":0.78,"q":0.39,"f":3.94},{"l":"L4","s":20.33,"i":1694,"c":33,"ld":0.73,"q":0.22,"f":2.72},{"l":"L5","s":13.54,"i":2256,"c":19,"ld":0.44,"q":0.09,"f":2.44}]},{"d":18,"dt":"2026-07-29","r":[{"l":"L1","s":63.33,"i":7036,"c":123,"ld":3.17,"q":0.81,"f":3.06},{"l":"L2","s":38.25,"i":3477,"c":48,"ld":1.51,"q":0.31,"f":3.55},{"l":"L3","s":30.75,"i":2366,"c":29,"ld":0.82,"q":0.34,"f":4.2},{"l":"L4","s":21.52,"i":1794,"c":32,"ld":0.79,"q":0.25,"f":2.98},{"l":"L5","s":13.07,"i":2179,"c":18,"ld":0.45,"q":0.09,"f":2.57}]},{"d":19,"dt":"2026-07-30","r":[{"l":"L1","s":66.84,"i":7426,"c":117,"ld":3.19,"q":0.73,"f":3.21},{"l":"L2","s":37.56,"i":3415,"c":46,"ld":1.43,"q":0.28,"f":3.75},{"l":"L3","s":31.77,"i":2444,"c":31,"ld":0.8,"q":0.35,"f":4.42},{"l":"L4","s":20.31,"i":1693,"c":33,"ld":0.71,"q":0.25,"f":3.24},{"l":"L5","s":12.11,"i":2018,"c":18,"ld":0.44,"q":0.08,"f":2.7}]}],"creatives":[{"id":"CR-1 / Reel","asset":"Creator 1, investor POV reel","line":"L1","fmt":"9:16","spend":626.39,"leads":32.3,"cpl":19.4,"ctr":0.0212,"freq":1.9,"status":"scaling"},{"id":"VD-A / 9:16","asset":"Development walkthrough, 15s","line":"L2","fmt":"9:16","spend":364.12,"leads":14.7,"cpl":24.8,"ctr":0.0171,"freq":2.4,"status":"scaling"},{"id":"CR-2 / Reel","asset":"Creator 2, AR explainer","line":"L1","fmt":"9:16","spend":341.67,"leads":13.1,"cpl":26.1,"ctr":0.0158,"freq":2.2,"status":"hold"},{"id":"CR-A / 1:1","asset":"Why Manchester carousel","line":"L2","fmt":"1:1","spend":238.08,"leads":7.5,"cpl":31.6,"ctr":0.0129,"freq":3.1,"status":"hold"},{"id":"ST-A / 1:1","asset":"Capital growth numbers card","line":"L3","fmt":"1:1","spend":322.69,"leads":7.3,"cpl":44.2,"ctr":0.0104,"freq":4.3,"status":"fatigued"},{"id":"ST-B / 16:9","asset":"From GBP 290,000 hero","line":"L3","fmt":"16:9","spend":172.47,"leads":3.3,"cpl":51.7,"ctr":0.0088,"freq":3.8,"status":"paused"}],"splits":{"market":[{"k":"UAE","spend":0.58,"leads":0.54,"cpl":0},{"k":"KSA","spend":0.42,"leads":0.46,"cpl":0}],"placement":[{"k":"Reels","v":0.41},{"k":"Feed","v":0.28},{"k":"Stories","v":0.19},{"k":"Explore","v":0.07},{"k":"Audience Network","v":0.05}],"age":[{"k":"25-34","v":0.19},{"k":"35-44","v":0.37},{"k":"45-54","v":0.29},{"k":"55+","v":0.15}],"gender":[{"k":"Men","v":0.71},{"k":"Women","v":0.29}]}};
+const PLAN = {leads:167, cpl:27.24};
+
+const BENCH = {
+  ctr:  {lo:0.0155, mid:0.0275, hi:0.0388, unit:'pct', dir:'up',  label:{en:'Click rate',ar:'نسبة النقر'}, hint:'CTR'},
+  cpl:  {lo:16, mid:27, hi:38, unit:'usd', dir:'down', label:{en:'Cost per lead',ar:'تكلفة العميل'}, hint:'CPL'},
+  cpm:  {lo:9, mid:14.19, hi:20, unit:'usd', dir:'down', label:{en:'Cost per 1,000',ar:'تكلفة الألف'}, hint:'CPM'},
+  freq: {lo:1.5, mid:3.0, hi:4.0, unit:'x', dir:'down', label:{en:'Frequency',ar:'التكرار'}, hint:'Frequency'}
+};
+const SOURCES = [
+  'Real estate on Meta 2026: click rate 2.75% median, conversion 2.15%, cost per lead 16 to 38 dollars. AdAmigo and Ryze, 2.4m accounts, Jan to May 2026.',
+  'Meta cost movement 2025 to 2026: cost per 1,000 up 20.1% to 14.19 dollars, cost per click up 11.4% to 0.78. Ryze, June 2026.',
+  'UAE real estate cost per lead on Meta 12 to 32 dollars, 44 to 117 dirhams. FDC Dubai, February 2026.',
+  'Dubai Meta lead ads 30 to 300 dirhams, off plan 30 to 120 dirhams per qualified lead. Real Estate Club Dubai, June 2026.',
+  'Sales qualified lead workable band 30 to 60 dollars, overseas property. Profydigital, February 2026.',
+  'Refresh creative at frequency 4.0 or a 30% fall from peak click rate. AdStellar via Foundry CRO, May 2026.'
+];
+
+const T = {
+  en:{tagPerf:'Performance Marketing', doc:'Daily Numbers', day:'Day {a} of {b}', live:'Refreshed {t}',
+    sample:'Sample data', shared:'Shared link', today:'Today', d7:'7 days', flight:'Flight',
+    theme:'Ink', themeAlt:'Paper', print:'Print',
+    spent:'Spent', leads:'Leads', cpl:'Cost per lead', ctr:'Click rate', freq:'Frequency', qual:'Qualified',
+    vsPrev:'vs previous', toDate:'flight to date',
+    pSpent:'Spent', pBudget:'Budget', pPace:'Pace vs plan', pProj:'Projected spend', pProjLeads:'Projected leads', pProjCpl:'Projected cost per lead',
+    lgSpent:'Spent', lgProj:'Projected', lgToday:'Today',
+    hDaily:'Daily spend and cost per lead', hCum:'Leads against plan',
+    hByLine:'Cost per lead by line', hFunnel:'Drop off', hVs:'Native form against website form',
+    hCre:'Cost per lead by asset', hMkt:'Market', hPlace:'Placement', hAge:'Age',
+    hTable:'All lines', hBench:'Against the market', hCad:'Daily cycle',
+    sources:'Sources', preparedFor:'Prepared for',
+    lgDailySpend:'Daily spend', lgDailyCpl:'Cost per lead', lgRefresh:'Creative refresh',
+    lgActual:'Actual', lgPlan:'Plan', lgProjLine:'Projected',
+    lgPlanCpl:'Planned cost per lead', lgOver:'Over plan', lgUnder:'Under plan',
+    lgNative:'Native form', lgSite:'Website form', lgFatigue:'Frequency past 4.0',
+    fnImpr:'Views', fnClicks:'Clicks', fnOpens:'Form opens', fnLeads:'Leads', fnQual:'Qualified',
+    vsCpl:'Cost per lead', vsCpql:'Cost per qualified', vsQual:'Qualified rate',
+    line:'Line', platform:'Platform', form:'Form', spend:'Spend', impr:'Views', clicks:'Clicks',
+    lds:'Leads', qlds:'Qualified', cplc:'Cost per lead', freqc:'Freq', total:'Total',
+    native:'Native', site:'Website', market:'Market', mkt:'Market',
+    c1:'Data in', c2:'Checks', c3:'Actions', c4:'Qualified back',
+    actNow:'act now', watch:'watch', working:'working', stale:'Sheet unreachable. Last pull {t}.'},
+  ar:{tagPerf:'التسويق الأدائي', doc:'أرقام اليوم', day:'اليوم {a} من {b}', live:'آخر تحديث {t}',
+    sample:'بيانات نموذجية', shared:'رابط المشاركة', today:'اليوم', d7:'٧ أيام', flight:'الحملة',
+    theme:'داكن', themeAlt:'فاتح', print:'طباعة',
+    spent:'المصروف', leads:'العملاء', cpl:'تكلفة العميل', ctr:'نسبة النقر', freq:'التكرار', qual:'المؤهلون',
+    vsPrev:'مقابل السابق', toDate:'حتى الآن',
+    pSpent:'المصروف', pBudget:'الميزانية', pPace:'الوتيرة', pProj:'المصروف المتوقع', pProjLeads:'العملاء المتوقعون', pProjCpl:'التكلفة المتوقعة',
+    lgSpent:'المصروف', lgProj:'المتوقع', lgToday:'اليوم',
+    hDaily:'المصروف اليومي وتكلفة العميل', hCum:'العملاء مقابل الخطة',
+    hByLine:'تكلفة العميل حسب البند', hFunnel:'مراحل التسرب', hVs:'النموذج الداخلي مقابل الموقع',
+    hCre:'تكلفة العميل حسب المادة', hMkt:'السوق', hPlace:'الموضع', hAge:'العمر',
+    hTable:'كل البنود', hBench:'مقارنة بالسوق', hCad:'الدورة اليومية',
+    sources:'المصادر', preparedFor:'أُعدّ لصالح',
+    lgDailySpend:'المصروف اليومي', lgDailyCpl:'تكلفة العميل', lgRefresh:'تحديث المواد',
+    lgActual:'الفعلي', lgPlan:'الخطة', lgProjLine:'المتوقع',
+    lgPlanCpl:'التكلفة المخططة', lgOver:'أعلى من الخطة', lgUnder:'أقل من الخطة',
+    lgNative:'نموذج داخلي', lgSite:'نموذج الموقع', lgFatigue:'تكرار فوق ٤.٠',
+    fnImpr:'الظهور', fnClicks:'النقرات', fnOpens:'فتح النموذج', fnLeads:'العملاء', fnQual:'المؤهلون',
+    vsCpl:'تكلفة العميل', vsCpql:'تكلفة المؤهل', vsQual:'نسبة التأهيل',
+    line:'البند', platform:'المنصة', form:'النموذج', spend:'المصروف', impr:'الظهور', clicks:'النقرات',
+    lds:'العملاء', qlds:'المؤهلون', cplc:'تكلفة العميل', freqc:'التكرار', total:'الإجمالي',
+    native:'داخلي', site:'الموقع', market:'السوق', mkt:'السوق',
+    c1:'وصول البيانات', c2:'المراجعة', c3:'الإجراءات', c4:'التأهيل',
+    actNow:'إجراء فوري', watch:'مراقبة', working:'ناجح', stale:'تعذّر الوصول. آخر تحديث {t}.'}
+};
+let L = CONFIG.language;
+const t = (k,v) => { let s = (T[L] && T[L][k]) || T.en[k] || k;
+  if(v) Object.keys(v).forEach(x => s = s.replace('{'+x+'}', v[x])); return s; };
+
+const $ = s => document.querySelector(s);
+const fmt = {
+  usd0:n => '$' + Math.round(n).toLocaleString('en-US'),
+  usd2:n => '$' + n.toFixed(2),
+  n0:n => Math.round(n).toLocaleString('en-US'),
+  n1:n => n.toFixed(1),
+  k:n => n >= 1000 ? (n/1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : Math.round(n),
+  pct:(n,d=2) => (n*100).toFixed(d) + '%',
+  x:n => n.toFixed(2) + 'x',
+  date:d => new Date(d+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}),
+  dshort:d => new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),
+  clock:d => d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+};
+const lineById = id => DATA.lines.find(l => l.id === id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+function agg(days){
+  const o = {spend:0,impr:0,clicks:0,leads:0,qual:0,byLine:{}};
+  days.forEach(d => d.r.forEach(r => {
+    o.spend += r.s; o.impr += r.i; o.clicks += r.c; o.leads += r.ld; o.qual += r.q;
+    const b = o.byLine[r.l] || (o.byLine[r.l] = {spend:0,impr:0,clicks:0,leads:0,qual:0,freq:0});
+    b.spend += r.s; b.impr += r.i; b.clicks += r.c; b.leads += r.ld; b.qual += r.q; b.freq = r.f;
+  }));
+  o.cpl = o.leads ? o.spend/o.leads : 0;
+  o.cpql = o.qual ? o.spend/o.qual : 0;
+  o.ctr = o.impr ? o.clicks/o.impr : 0;
+  o.cpm = o.impr ? o.spend/o.impr*1000 : 0;
+  let w = 0; o.freq = 0;
+  Object.keys(o.byLine).forEach(k => { const b = o.byLine[k];
+    b.cpl = b.leads ? b.spend/b.leads : 0;
+    b.cpql = b.qual ? b.spend/b.qual : 0;
+    b.ctr = b.impr ? b.clicks/b.impr : 0;
+    o.freq += b.freq * b.spend; w += b.spend; });
+  o.freq = w ? o.freq/w : 0;
+  return o;
+}
+let period = CONFIG.defaultPeriod;
+const window_ = () => { const d = DATA.days;
+  if(period === 'today') return {cur:d.slice(-1), prev:d.slice(-2,-1)};
+  if(period === '7d') return {cur:d.slice(-7), prev:d.slice(-14,-7)};
+  return {cur:d, prev:[]};
+};
+
+/* ---------- kpis ---------- */
+function sparkline(vals){
+  const w = 100, h = 22, mn = Math.min(...vals), mx = Math.max(...vals), rg = (mx-mn)||1;
+  const pts = vals.map((v,i) => [i/(Math.max(1,vals.length-1))*w, h - (v-mn)/rg*(h-3) - 1.5]);
+  const d = pts.map((p,i) => (i?'L':'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const l = pts[pts.length-1];
+  return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" aria-hidden="true">'
+    + '<path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".45"/>'
+    + '<circle cx="'+l[0].toFixed(1)+'" cy="'+l[1].toFixed(1)+'" r="1.9" fill="currentColor"/></svg>';
+}
+function pinCls(key, v){ const b = BENCH[key]; if(!b) return null;
+  return b.dir === 'up' ? (v >= b.mid ? 'good' : v >= b.lo ? 'warn' : 'bad')
+                        : (v <= b.lo ? 'good' : v <= b.hi ? 'warn' : 'bad'); }
+function deltaHtml(cur, prev, lowerIsBetter){
+  if(!prev || !isFinite(prev) || prev === 0) return '<span class="delta flat">&middot;</span>';
+  const pc = (cur-prev)/prev;
+  if(Math.abs(pc) < 0.005) return '<span class="delta flat">0.0%</span>';
+  return '<span class="delta '+((lowerIsBetter ? pc < 0 : pc > 0) ? 'up' : 'down')+'">'
+    + (pc>0?'+':'') + (pc*100).toFixed(1) + '%</span>';
+}
+function renderKpis(){
+  const {cur, prev} = window_();
+  const a = agg(cur), p = prev.length ? agg(prev) : null;
+  const daily = k => DATA.days.slice(-10).map(d => agg([d])[k] || 0);
+  const cards = [
+    {k:'spent', v:fmt.usd0(a.spend), raw:a.spend, pv:p&&p.spend, lower:false, s:daily('spend'), bm:null, hint:'Amount spent'},
+    {k:'leads', v:fmt.n0(a.leads),   raw:a.leads, pv:p&&p.leads, lower:false, s:daily('leads'), bm:null, hint:'Leads'},
+    {k:'cpl',   v:fmt.usd2(a.cpl),   raw:a.cpl,   pv:p&&p.cpl,   lower:true,  s:daily('cpl'),   bm:'cpl', hint:'CPL'},
+    {k:'ctr',   v:fmt.pct(a.ctr),    raw:a.ctr,   pv:p&&p.ctr,   lower:false, s:daily('ctr'),   bm:'ctr', hint:'CTR'},
+    {k:'freq',  v:fmt.x(a.freq),     raw:a.freq,  pv:p&&p.freq,  lower:true,  s:daily('freq'),  bm:'freq',hint:'Frequency'},
+    {k:'qual',  v:fmt.n0(a.qual),    raw:a.qual,  pv:p&&p.qual,  lower:false, s:daily('qual'),  bm:null, hint:'Sales qualified'}
+  ];
+  $('#kpis').innerHTML = cards.map(c => {
+    const pc = c.bm ? pinCls(c.bm, c.raw) : null;
+    return '<div class="kpi"><div class="k-lbl"><span class="lbl" title="'+c.hint+'">'+t(c.k)+'</span>'
+      + (pc ? '<i class="pin '+pc+'"></i>' : '') + '</div>'
+      + '<div class="v tnum">'+c.v+'</div>'
+      + '<div class="sub">'+deltaHtml(c.raw, c.pv, c.lower)
+      + '<span class="lbl" style="font-size:8.5px">'+(period === 'flight' ? t('toDate') : t('vsPrev'))+'</span></div>'
+      + sparkline(c.s) + '</div>';
+  }).join('');
+}
+
+/* ---------- flags: label plus number, nothing else ---------- */
+function renderFlags(){
+  if(!CONFIG.showFlags){ $('#flags').style.display = 'none'; return; }
+  const a = agg(DATA.days), out = [];
+  const worstFreq = Object.entries(a.byLine).filter(([,b]) => b.spend > 100)
+    .sort((x,y) => y[1].freq - x[1].freq)[0];
+  if(worstFreq && worstFreq[1].freq > 4)
+    out.push({sev:'bad', k:lineById(worstFreq[0]).short + ' ' + t('freqc'), v:fmt.x(worstFreq[1].freq)});
+  if(a.ctr < BENCH.ctr.mid)
+    out.push({sev:'warn', k:t('ctr') + ' vs ' + fmt.pct(BENCH.ctr.mid), v:fmt.pct(a.ctr)});
+  const dev = (a.cpl - PLAN.cpl)/PLAN.cpl;
+  out.push({sev: dev > 0.15 ? 'bad' : dev > 0.04 ? 'warn' : 'good',
+            k:t('cpl') + ' vs ' + fmt.usd2(PLAN.cpl), v:(dev>0?'+':'') + (dev*100).toFixed(0) + '%'});
+  const best = Object.entries(a.byLine).filter(([,b]) => b.leads > 3).sort((x,y) => x[1].cpl - y[1].cpl)[0];
+  if(best) out.push({sev:'good', k:lineById(best[0]).short + ' ' + t('cplc'), v:fmt.usd2(best[1].cpl)});
+  const order = {bad:0, warn:1, good:2};
+  const txt = {bad:t('actNow'), warn:t('watch'), good:t('working')};
+  $('#flags').innerHTML = out.sort((x,y) => order[x.sev]-order[y.sev]).slice(0,4).map(f =>
+    '<div class="flag"><span class="stamp '+f.sev+'">'+txt[f.sev]+'</span>'
+    + '<div><div class="fk">'+f.k+'</div><div class="fv">'+f.v+'</div></div></div>').join('');
+}
+
+/* ---------- pacing ---------- */
+function renderPacing(){
+  const m = DATA.meta, a = agg(DATA.days);
+  const plannedToDate = m.netBudget * m.dayN / m.flightDays;
+  const pacePc = a.spend/plannedToDate, spentPc = a.spend/m.netBudget, elapsed = m.dayN/m.flightDays;
+  const projSpend = a.spend/m.dayN*m.flightDays;
+  const projLeads = a.leads/m.dayN*m.flightDays;
+  const figs = [
+    {k:t('pSpent'), v:fmt.usd0(a.spend)}, {k:t('pBudget'), v:fmt.usd0(m.netBudget)},
+    {k:t('pPace'), v:(pacePc*100).toFixed(0)+'%'}, {k:t('pProj'), v:fmt.usd0(projSpend)},
+    {k:t('pProjLeads'), v:Math.round(projLeads)+' / '+PLAN.leads},
+    {k:t('pProjCpl'), v:fmt.usd2(m.netBudget/projLeads)+' / '+fmt.usd2(PLAN.cpl)}
+  ];
+  $('#paceFigs').innerHTML = figs.map(f =>
+    '<div><span class="lbl">'+f.k+'</span><span class="v">'+f.v+'</span></div>').join('');
+  $('#paceBar').innerHTML =
+      '<div class="pace-fill" style="width:'+(spentPc*100).toFixed(2)+'%"></div>'
+    + '<div class="pace-proj" style="left:'+(spentPc*100).toFixed(2)+'%;width:'
+    + Math.max(0,(projSpend/m.netBudget-spentPc)*100).toFixed(2)+'%"></div>'
+    + '<div class="pace-mark" style="left:'+(elapsed*100).toFixed(2)+'%"><span>'+t('lgToday')+'</span></div>';
+  $('#paceLegend').innerHTML =
+      '<span><i style="background:var(--ink);opacity:.86;height:8px"></i>'+t('lgSpent')+'</span>'
+    + '<span><i style="background:var(--ink-3);opacity:.5;height:8px"></i>'+t('lgProj')+'</span>'
+    + '<span><i style="background:var(--stamp)"></i>'+t('lgToday')+'</span>';
+}
+
+/* ---------- chart: daily spend bars + cpl line ---------- */
+function gDaily(){
+  const days = DATA.days, W = 720, H = 230, pl = 42, pr = 42, pb = 26, pt = 14;
+  const iw = W-pl-pr, ih = H-pt-pb;
+  const sp = days.map(d => agg([d]).spend), cp = days.map(d => agg([d]).cpl);
+  const maxS = Math.max(...sp)*1.25, maxC = Math.max(...cp)*1.2;
+  const gap = iw/days.length, bw = gap*0.6;
+  let s = '';
+  for(let i = 0; i <= 4; i++){
+    const y = pt+ih-ih*i/4;
+    s += '<line class="gl" x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'"/>'
+      +  '<text x="'+(pl-6)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end">'+Math.round(maxS*i/4)+'</text>'
+      +  '<text x="'+(W-pr+6)+'" y="'+(y+3).toFixed(1)+'" text-anchor="start" fill="var(--stamp)">'+Math.round(maxC*i/4)+'</text>';
+  }
+  const rx = days.findIndex(d => d.d === DATA.meta.refreshDay);
+  if(rx >= 0){ const x = pl+rx*gap+gap/2;
+    s += '<line class="ref" x1="'+x.toFixed(1)+'" y1="'+pt+'" x2="'+x.toFixed(1)+'" y2="'+(pt+ih)+'"/>'; }
+  days.forEach((d,i) => {
+    const h = sp[i]/maxS*ih, x = pl+i*gap+(gap-bw)/2;
+    s += '<rect class="bar'+(d.d >= 13 && d.d <= 14 ? ' hot' : '')+'" x="'+x.toFixed(1)+'" y="'+(pt+ih-h).toFixed(1)
+      + '" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'"/>';
+    if(i%3 === 0 || i === days.length-1)
+      s += '<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle">'+fmt.dshort(d.dt)+'</text>';
+  });
+  const pts = cp.map((v,i) => [pl+i*gap+gap/2, pt+ih-v/maxC*ih]);
+  s += '<path class="ln" d="'+pts.map((p,i) => (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+'"/>';
+  pts.forEach(p => s += '<circle class="pt" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2"/>');
+  days.forEach((d,i) => s += '<rect class="hz" data-i="'+i+'" x="'+(pl+i*gap).toFixed(1)+'" y="'+pt
+    + '" width="'+gap.toFixed(1)+'" height="'+ih+'" fill="transparent"/>');
+  const el = $('#gDaily'); el.innerHTML = s;
+  $('#lgDaily').innerHTML =
+      '<span><i style="background:var(--ink);opacity:.3;height:8px"></i>'+t('lgDailySpend')+'</span>'
+    + '<span><i style="background:var(--stamp)"></i>'+t('lgDailyCpl')+'</span>'
+    + '<span><i style="background:var(--pen)"></i>'+t('lgRefresh')+' &middot; '+(L==='ar'?'اليوم ١٥':'day 15')+'</span>';
+  const tip = $('#tip');
+  el.querySelectorAll('.hz').forEach(z => {
+    z.addEventListener('mouseenter', () => {
+      const d = days[+z.dataset.i], x = agg([d]);
+      tip.innerHTML = '<b>'+fmt.dshort(d.dt)+'</b> &nbsp; '+fmt.usd0(x.spend)+' &nbsp; '
+        + fmt.n1(x.leads)+' '+t('lds').toLowerCase()+' &nbsp; '+fmt.usd2(x.cpl);
+      tip.style.opacity = 1;
+      const r = el.getBoundingClientRect(), b = z.getBoundingClientRect();
+      tip.style.left = Math.min(r.width-230, Math.max(0, b.left-r.left+b.width/2-100))+'px';
+      tip.style.top = '2px';
+    });
+    z.addEventListener('mouseleave', () => tip.style.opacity = 0);
+  });
+}
+
+/* ---------- chart: cumulative leads vs plan ---------- */
+function gCum(){
+  const m = DATA.meta, W = 460, H = 230, pl = 36, pr = 14, pb = 26, pt = 14;
+  const iw = W-pl-pr, ih = H-pt-pb;
+  let run = 0;
+  const act = DATA.days.map(d => { run += agg([d]).leads; return run; });
+  const perDay = act[act.length-1]/m.dayN;
+  const maxY = Math.max(PLAN.leads, perDay*m.flightDays)*1.1;
+  const X = i => pl + i/(m.flightDays-1)*iw;
+  const Y = v => pt + ih - v/maxY*ih;
+  let s = '';
+  for(let i = 0; i <= 4; i++){
+    const y = pt+ih-ih*i/4;
+    s += '<line class="gl" x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'"/>'
+      +  '<text x="'+(pl-6)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end">'+Math.round(maxY*i/4)+'</text>';
+  }
+  // plan line, straight to target
+  s += '<path class="ln2" d="M'+X(0).toFixed(1)+' '+Y(PLAN.leads/m.flightDays).toFixed(1)
+    + ' L'+X(m.flightDays-1).toFixed(1)+' '+Y(PLAN.leads).toFixed(1)+'"/>';
+  // actual, filled
+  const ap = act.map((v,i) => [X(i), Y(v)]);
+  s += '<path d="M'+ap[0][0].toFixed(1)+' '+(pt+ih)+' '
+    + ap.map(p => 'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')
+    + ' L'+ap[ap.length-1][0].toFixed(1)+' '+(pt+ih)+' Z" fill="var(--ink)" opacity=".14"/>';
+  s += '<path d="'+ap.map((p,i) => (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')
+    + '" fill="none" stroke="var(--ink)" stroke-width="1.9"/>';
+  // projection tail
+  s += '<path class="ln" style="stroke-dasharray:4 3" d="M'+ap[ap.length-1][0].toFixed(1)+' '+ap[ap.length-1][1].toFixed(1)
+    + ' L'+X(m.flightDays-1).toFixed(1)+' '+Y(perDay*m.flightDays).toFixed(1)+'"/>';
+  // end markers
+  s += '<circle cx="'+X(m.flightDays-1).toFixed(1)+'" cy="'+Y(PLAN.leads).toFixed(1)+'" r="2.6" fill="var(--pen)"/>'
+    +  '<text class="val" x="'+(X(m.flightDays-1)-4).toFixed(1)+'" y="'+(Y(PLAN.leads)-7).toFixed(1)+'" text-anchor="end" fill="var(--pen)">'+PLAN.leads+'</text>'
+    +  '<circle cx="'+X(m.flightDays-1).toFixed(1)+'" cy="'+Y(perDay*m.flightDays).toFixed(1)+'" r="2.6" fill="var(--stamp)"/>'
+    +  '<text class="val" x="'+(X(m.flightDays-1)-4).toFixed(1)+'" y="'+(Y(perDay*m.flightDays)+13).toFixed(1)+'" text-anchor="end" fill="var(--stamp)">'+Math.round(perDay*m.flightDays)+'</text>';
+  // today marker
+  s += '<line x1="'+X(m.dayN-1).toFixed(1)+'" y1="'+pt+'" x2="'+X(m.dayN-1).toFixed(1)+'" y2="'+(pt+ih)
+    + '" stroke="var(--stamp)" stroke-width="1" opacity=".5"/>'
+    + '<text x="'+(X(m.dayN-1)+4).toFixed(1)+'" y="'+(pt+9)+'" fill="var(--stamp)">'+t('lgToday')+'</text>';
+  [1, 8, 15, 22, 30].forEach(d => s += '<text x="'+X(d-1).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle">'+d+'</text>');
+  $('#gCum').innerHTML = s;
+  $('#lgCum').innerHTML =
+      '<span><i style="background:var(--ink);height:8px"></i>'+t('lgActual')+' '+Math.round(act[act.length-1])+'</span>'
+    + '<span><i style="background:var(--pen)"></i>'+t('lgPlan')+' '+PLAN.leads+'</span>'
+    + '<span><i style="background:var(--stamp)"></i>'+t('lgProjLine')+' '+Math.round(perDay*m.flightDays)+'</span>';
+}
+
+/* ---------- chart: cpl by line, horizontal, plan tick ---------- */
+function gByLine(){
+  const a = agg(window_().cur), W = 560, pl = 132, pr = 52;
+  const rows = DATA.lines.filter(l => a.byLine[l.id]);
+  const rh = 30, H = rows.length*rh + 26;
+  const iw = W-pl-pr;
+  const maxV = Math.max(...rows.map(l => Math.max(a.byLine[l.id].cpl, l.planCpl)))*1.12;
+  let s = '';
+  rows.forEach((l,i) => {
+    const b = a.byLine[l.id], y = 8+i*rh, bh = 14;
+    const w = b.cpl/maxV*iw, pw = l.planCpl/maxV*iw;
+    const over = b.cpl > l.planCpl;
+    s += '<text x="'+(pl-9)+'" y="'+(y+bh-3)+'" text-anchor="end" fill="var(--ink-2)" style="font-size:9.5px">'+esc(l.short)+'</text>'
+      +  '<rect class="track" x="'+pl+'" y="'+y+'" width="'+iw+'" height="'+bh+'"/>'
+      +  '<rect class="hb'+(over ? ' badb' : '')+'" x="'+pl+'" y="'+y+'" width="'+w.toFixed(1)+'" height="'+bh+'"/>'
+      +  '<line class="tick" x1="'+(pl+pw).toFixed(1)+'" y1="'+(y-3)+'" x2="'+(pl+pw).toFixed(1)+'" y2="'+(y+bh+3)+'" stroke="var(--pen)"/>'
+      +  '<text class="val" x="'+(pl+iw+8)+'" y="'+(y+bh-3)+'" style="font-size:10.5px">'+fmt.usd2(b.cpl)+'</text>';
+  });
+  s += '<line class="axis" x1="'+pl+'" y1="'+(H-16)+'" x2="'+(W-pr)+'" y2="'+(H-16)+'"/>';
+  for(let i = 0; i <= 4; i++)
+    s += '<text x="'+(pl+iw*i/4).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle">'+fmt.usd0(maxV*i/4)+'</text>';
+  const el = $('#gByLine'); el.setAttribute('viewBox','0 0 '+W+' '+H); el.style.height = H+'px'; el.innerHTML = s;
+  $('#lgByLine').innerHTML =
+      '<span><i style="background:var(--ink);opacity:.8;height:8px"></i>'+t('lgUnder')+'</span>'
+    + '<span><i style="background:var(--stamp);opacity:.85;height:8px"></i>'+t('lgOver')+'</span>'
+    + '<span><i style="background:var(--pen)"></i>'+t('lgPlanCpl')+'</span>';
+}
+
+/* ---------- chart: funnel ---------- */
+function gFunnel(){
+  const a = agg(window_().cur), W = 560, pl = 104, pr = 76;
+  const rows = [['fnImpr',a.impr],['fnClicks',a.clicks],['fnOpens',a.clicks*0.71],['fnLeads',a.leads],['fnQual',a.qual]];
+  const rh = 32, H = rows.length*rh + 10, iw = W-pl-pr, mx = rows[0][1];
+  let s = '';
+  rows.forEach((r,i) => {
+    const y = 8+i*rh, bh = 16, w = Math.max(1.5, r[1]/mx*iw);
+    const rate = i ? (r[1]/rows[i-1][1]*100).toFixed(1)+'%' : '';
+    s += '<text x="'+(pl-9)+'" y="'+(y+bh-4)+'" text-anchor="end" fill="var(--ink-2)" style="font-size:9.5px">'+t(r[0])+'</text>'
+      +  '<rect class="hb" x="'+pl+'" y="'+y+'" width="'+w.toFixed(1)+'" height="'+bh+'" opacity="'+(0.82-i*0.11).toFixed(2)+'"/>'
+      +  '<text class="val" x="'+(pl+w+7).toFixed(1)+'" y="'+(y+bh-4)+'" style="font-size:10.5px">'+fmt.k(r[1])+'</text>'
+      +  (rate ? '<text x="'+(W-4)+'" y="'+(y+bh-4)+'" text-anchor="end" fill="var(--ink-3)">'+rate+'</text>' : '');
+  });
+  const el = $('#gFunnel'); el.setAttribute('viewBox','0 0 '+W+' '+H); el.style.height = H+'px'; el.innerHTML = s;
+}
+
+/* ---------- chart: native vs website, grouped ---------- */
+function gVs(){
+  const a = agg(DATA.days);
+  const nat = ['L1','L2','L4'].reduce((s,k) => { const b = a.byLine[k];
+    return b ? {sp:s.sp+b.spend, q:s.q+b.qual, ld:s.ld+b.leads} : s; }, {sp:0,q:0,ld:0});
+  const st = a.byLine.L3;
+  const groups = [
+    {k:t('vsCpl'), a:nat.sp/nat.ld, b:st.spend/st.leads, f:fmt.usd2},
+    {k:t('vsCpql'), a:nat.sp/nat.q, b:st.spend/st.qual, f:fmt.usd0},
+    {k:t('vsQual'), a:nat.q/nat.ld, b:st.qual/st.leads, f:v => fmt.pct(v,1)}
+  ];
+  const W = 560, H = 210, pl = 20, pr = 20, pb = 30, pt = 22, iw = W-pl-pr, ih = H-pt-pb;
+  const gw = iw/groups.length, bw = Math.min(46, gw*0.24);
+  let s = '';
+  s += '<line class="axis" x1="'+pl+'" y1="'+(pt+ih)+'" x2="'+(W-pr)+'" y2="'+(pt+ih)+'"/>';
+  groups.forEach((g,i) => {
+    const mx = Math.max(g.a, g.b)*1.3, cx = pl+gw*i+gw/2;
+    [[g.a,'hb',-1],[g.b,'hb alt',1]].forEach(([v,cls,side]) => {
+      const h = v/mx*ih, x = cx + side*(bw*0.6) - (side < 0 ? bw : 0);
+      s += '<rect class="'+cls+'" x="'+x.toFixed(1)+'" y="'+(pt+ih-h).toFixed(1)+'" width="'+bw+'" height="'+h.toFixed(1)+'"/>'
+        +  '<text class="val" x="'+(x+bw/2).toFixed(1)+'" y="'+(pt+ih-h-6).toFixed(1)+'" text-anchor="middle" style="font-size:10.5px">'+g.f(v)+'</text>';
+    });
+    s += '<text x="'+cx.toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" fill="var(--ink-2)" style="font-size:9.5px">'+g.k+'</text>';
+  });
+  $('#gVs').innerHTML = s;
+  $('#lgVs').innerHTML =
+      '<span><i style="background:var(--ink);opacity:.8;height:8px"></i>'+t('lgNative')+'</span>'
+    + '<span><i style="background:var(--pen);opacity:.75;height:8px"></i>'+t('lgSite')+'</span>';
+}
+
+/* ---------- chart: cpl by asset ---------- */
+function gCre(){
+  const rows = DATA.creatives.slice().sort((a,b) => a.cpl - b.cpl);
+  const W = 560, pl = 168, pr = 92, rh = 30, H = rows.length*rh + 26, iw = W-pl-pr;
+  const mx = Math.max(...rows.map(r => r.cpl))*1.12;
+  let s = '';
+  rows.forEach((r,i) => {
+    const y = 6+i*rh, bh = 14, w = r.cpl/mx*iw;
+    const cls = r.freq >= 4 ? 'hb badb' : r.status === 'paused' ? 'hb warnb' : 'hb';
+    s += '<text x="'+(pl-9)+'" y="'+(y+bh-3)+'" text-anchor="end" fill="var(--ink-2)" style="font-size:9.5px">'+esc(r.id)+'</text>'
+      +  '<rect class="track" x="'+pl+'" y="'+y+'" width="'+iw+'" height="'+bh+'"/>'
+      +  '<rect class="'+cls+'" x="'+pl+'" y="'+y+'" width="'+w.toFixed(1)+'" height="'+bh+'"/>'
+      +  '<text class="val" x="'+(pl+iw+8)+'" y="'+(y+bh-3)+'" style="font-size:10.5px">'+fmt.usd2(r.cpl)+'</text>'
+      +  '<text x="'+(W-4)+'" y="'+(y+bh-3)+'" text-anchor="end" fill="'+(r.freq >= 4 ? 'var(--stamp)' : 'var(--ink-3)')+'">'+fmt.x(r.freq)+'</text>';
+  });
+  s += '<line class="axis" x1="'+pl+'" y1="'+(H-16)+'" x2="'+(W-pr)+'" y2="'+(H-16)+'"/>';
+  for(let i = 0; i <= 4; i++)
+    s += '<text x="'+(pl+iw*i/4).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle">'+fmt.usd0(mx*i/4)+'</text>';
+  const el = $('#gCre'); el.setAttribute('viewBox','0 0 '+W+' '+H); el.style.height = H+'px'; el.innerHTML = s;
+  $('#lgCre').innerHTML =
+      '<span><i style="background:var(--stamp);opacity:.85;height:8px"></i>'+t('lgFatigue')+'</span>'
+    + '<span style="color:var(--ink-3)">'+t('freqc')+' &rarr;</span>';
+}
+
+/* ---------- donut: market ---------- */
+function gMkt(){
+  const s0 = DATA.splits.market, W = 300, H = 190, cx = 96, cy = 92, r = 62, rin = 38;
+  let ang = -Math.PI/2, s = '';
+  const cols = ['var(--ink)','var(--pen)'];
+  s0.forEach((m,i) => {
+    const a0 = ang, a1 = ang + m.spend*Math.PI*2; ang = a1;
+    const p = (rr,a) => [cx+Math.cos(a)*rr, cy+Math.sin(a)*rr];
+    const [x0,y0] = p(r,a0), [x1,y1] = p(r,a1), [x2,y2] = p(rin,a1), [x3,y3] = p(rin,a0);
+    const big = (a1-a0) > Math.PI ? 1 : 0;
+    s += '<path d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+r+' '+r+' 0 '+big+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)
+      + ' L'+x2.toFixed(1)+' '+y2.toFixed(1)+' A'+rin+' '+rin+' 0 '+big+' 0 '+x3.toFixed(1)+' '+y3.toFixed(1)
+      + ' Z" fill="'+cols[i]+'" opacity="'+(i?0.75:0.85)+'"/>';
+  });
+  s0.forEach((m,i) => {
+    const y = 66+i*44;
+    s += '<rect x="196" y="'+(y-9)+'" width="9" height="9" fill="'+cols[i]+'" opacity="'+(i?0.75:0.85)+'"/>'
+      +  '<text x="212" y="'+y+'" fill="var(--ink-2)" style="font-size:10.5px">'+m.k+'</text>'
+      +  '<text class="val" x="212" y="'+(y+17)+'" style="font-size:13px">'+fmt.pct(m.spend,0)+'</text>'
+      +  '<text x="212" y="'+(y+30)+'" fill="var(--ink-3)">'+fmt.pct(m.leads,0)+' '+t('lds').toLowerCase()+'</text>';
+  });
+  s += '<text class="val" x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" style="font-size:11px">'+t('spend')+'</text>';
+  $('#gMkt').innerHTML = s;
+}
+
+/* ---------- simple bars ---------- */
+function bars(sel, rows, w){
+  const W = w, pl = 96, pr = 44, rh = 26, H = rows.length*rh + 8, iw = W-pl-pr;
+  const mx = Math.max(...rows.map(r => r.v));
+  let s = '';
+  rows.forEach((r,i) => {
+    const y = 6+i*rh, bh = 13;
+    s += '<text x="'+(pl-9)+'" y="'+(y+bh-2)+'" text-anchor="end" fill="var(--ink-2)" style="font-size:9.5px">'+esc(r.k)+'</text>'
+      +  '<rect class="track" x="'+pl+'" y="'+y+'" width="'+iw+'" height="'+bh+'"/>'
+      +  '<rect class="hb" x="'+pl+'" y="'+y+'" width="'+(r.v/mx*iw).toFixed(1)+'" height="'+bh+'"/>'
+      +  '<text class="val" x="'+(pl+iw+8)+'" y="'+(y+bh-2)+'" style="font-size:10.5px">'+fmt.pct(r.v,0)+'</text>';
+  });
+  const el = $(sel); el.setAttribute('viewBox','0 0 '+W+' '+H); el.style.height = H+'px'; el.innerHTML = s;
+}
+
+/* ---------- table ---------- */
+function renderTable(){
+  const a = agg(window_().cur);
+  $('#ltHead').innerHTML = ['line','platform','form','spend','impr','clicks','lds','cplc','qlds','freqc']
+    .map(k => '<th>'+t(k)+'</th>').join('');
+  $('#ltBody').innerHTML = DATA.lines.filter(l => a.byLine[l.id]).map(l => {
+    const b = a.byLine[l.id], dev = (b.cpl-l.planCpl)/l.planCpl;
+    return '<tr><td>'+esc(l.label)+'</td><td>'+l.platform+'</td>'
+      + '<td>'+(l.form === 'native' ? t('native') : t('site'))+'</td>'
+      + '<td>'+fmt.usd0(b.spend)+'</td><td>'+fmt.n0(b.impr)+'</td><td>'+fmt.n0(b.clicks)+'</td>'
+      + '<td>'+fmt.n1(b.leads)+'</td>'
+      + '<td>'+fmt.usd2(b.cpl)+' <span class="delta '+(dev <= 0 ? 'up' : 'down')+'">'+(dev>0?'+':'')+(dev*100).toFixed(0)+'%</span></td>'
+      + '<td>'+fmt.n1(b.qual)+'</td><td>'+fmt.x(b.freq)+'</td></tr>';
+  }).join('');
+  $('#ltFoot').innerHTML = '<tr><td>'+t('total')+'</td><td></td><td></td><td>'+fmt.usd0(a.spend)+'</td>'
+    + '<td>'+fmt.n0(a.impr)+'</td><td>'+fmt.n0(a.clicks)+'</td><td>'+fmt.n1(a.leads)+'</td>'
+    + '<td>'+fmt.usd2(a.cpl)+'</td><td>'+fmt.n1(a.qual)+'</td><td>'+fmt.x(a.freq)+'</td></tr>';
+}
+
+/* ---------- benchmarks ---------- */
+function renderBench(){
+  const a = agg(DATA.days), ours = {ctr:a.ctr, cpl:a.cpl, cpm:a.cpm, freq:a.freq};
+  $('#benchGrid').innerHTML = Object.keys(BENCH).map(k => {
+    const b = BENCH[k], v = ours[k], hi = Math.max(b.hi, v)*1.1;
+    const good = b.dir === 'up' ? v >= b.mid : v <= b.hi;
+    const f = b.unit === 'pct' ? (x => fmt.pct(x,2)) : b.unit === 'usd' ? (x => fmt.usd2(x)) : (x => fmt.x(x));
+    return '<div class="bm"><div class="lbl" title="'+b.hint+'">'+(L === 'ar' ? b.label.ar : b.label.en)+'</div>'
+      + '<div class="bm-row"><span class="ours">'+f(v)+'</span><span class="theirs">'+f(b.lo)+' &ndash; '+f(b.hi)+'</span></div>'
+      + '<div class="bm-scale"><i style="left:'+(b.lo/hi*100).toFixed(0)+'%;width:'+((b.hi-b.lo)/hi*100).toFixed(0)+'%"></i>'
+      + '<u style="left:'+(v/hi*100).toFixed(0)+'%;background:'+(good ? 'var(--grow)' : 'var(--stamp)')+'"></u></div></div>';
+  }).join('');
+  $('#sourceList').innerHTML = SOURCES.map(s => '<li>'+s+'</li>').join('');
+}
+
+/* ---------- cadence: times and labels only ---------- */
+function renderCad(){
+  const c = [['08:00','c1'],['08:30','c2'],['11:00','c3'],['16:00','c4']];
+  $('#cad').innerHTML = c.map(x => '<div><div class="t">'+x[0]+'</div><h4>'+t(x[1])+'</h4></div>').join('');
+}
+
+/* ---------- chrome ---------- */
+function renderChrome(){
+  const m = DATA.meta, now = new Date();
+  document.documentElement.lang = L;
+  document.documentElement.dir = L === 'ar' ? 'rtl' : 'ltr';
+  const set = (id,v) => { const e = $(id); if(e) e.textContent = v; };
+  set('#tagPerf', t('tagPerf')); set('#lblShared', t('shared')); set('#sharedUrl', CONFIG.sharedLink);
+  set('#dlClient', CONFIG.client); set('#dlDoc', t('doc')); set('#dlDate', fmt.date(m.today));
+  set('#dlDay', t('day',{a:m.dayN,b:m.flightDays}) + ' · ' + CONFIG.market);
+  set('#dlLive', t('live',{t:fmt.clock(now)}));
+  set('#dlSample', CONFIG.sheetUrl ? '' : t('sample'));
+  set('#pToday', t('today')); set('#p7d', t('d7')); set('#pFlight', t('flight'));
+  set('#themeBtn', document.documentElement.dataset.theme === 'ink' ? t('themeAlt') : t('theme'));
+  set('#printBtn', t('print'));
+  ['hDaily','hCum','hByLine','hFunnel','hVs','hCre','hMkt','hPlace','hAge','hTable','hBench','hCad']
+    .forEach(k => set('#'+k, t(k)));
+  set('#lblSources', t('sources')); set('#lblPreparedFor', t('preparedFor'));
+  set('#mDaily', L === 'ar' ? 'محوران' : 'two axes');
+  set('#mByLine', L === 'ar' ? 'مقابل الخطة' : 'against plan');
+  set('#mVs', L === 'ar' ? 'كل الحملة' : 'full flight');
+  set('#mCre', L === 'ar' ? '٦ من ١٨' : '6 of 18');
+  set('#mTable', period === 'flight' ? t('toDate') : t('vsPrev'));
+  set('#mBench', L === 'ar' ? 'معايير ٢٠٢٦' : 'validated 30 Jul 2026');
+  document.querySelectorAll('[data-period]').forEach(b => b.setAttribute('aria-pressed', b.dataset.period === period));
+  $('#footStamp').innerHTML = (CONFIG.sheetUrl ? '' : '<b>'+t('sample')+'</b> &middot; ')
+    + 'ITP Live &middot; ' + now.toLocaleString('en-GB') + ' &middot; ' + CONFIG.contact;
+}
+
+/* ---------- live sheet ---------- */
+function parseCsv(text){
+  const rows = []; let row = [], cell = '', q = false;
+  for(let i = 0; i < text.length; i++){ const c = text[i];
+    if(q){ if(c === '"' && text[i+1] === '"'){ cell += '"'; i++; } else if(c === '"'){ q = false; } else cell += c; }
+    else if(c === '"') q = true;
+    else if(c === ',') { row.push(cell); cell = ''; }
+    else if(c === '\n'){ row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if(c !== '\r') cell += c; }
+  if(cell || row.length){ row.push(cell); rows.push(row); }
+  const head = rows.shift().map(h => h.trim());
+  return rows.filter(r => r.length === head.length).map(r => Object.fromEntries(head.map((h,i) => [h,r[i]])));
+}
+const HEADER_MAP = {
+  date:['day','date','reporting starts','stat time day'],
+  spend:['amount spent (usd)','amount spent','cost','spend','total spend'],
+  impr:['impressions','impression','paid impressions'],
+  clicks:['link clicks','clicks (all)','clicks','swipe ups','swipes'],
+  leads:['leads','on-facebook leads','website leads','conversions','total conversions'],
+  freq:['frequency','avg. impressions per user']
+};
+const pick = (row,key) => { const keys = Object.keys(row);
+  for(const c of HEADER_MAP[key]){ const h = keys.find(k => k.toLowerCase().trim() === c); if(h) return row[h]; }
+  for(const c of HEADER_MAP[key]){ const h = keys.find(k => k.toLowerCase().includes(c)); if(h) return row[h]; }
+  return null; };
+const num = v => { const n = parseFloat(String(v||'').replace(/[^0-9.\-]/g,'')); return isFinite(n) ? n : 0; };
+let lastGood = null;
+async function loadLive(){
+  if(!CONFIG.sheetUrl) return null;
+  try{
+    const res = await fetch(CONFIG.sheetUrl,{cache:'no-store'});
+    if(!res.ok) throw new Error('unreachable');
+    const rows = parseCsv(await res.text()), byDate = {};
+    rows.forEach(r => { const dt = (pick(r,'date')||'').slice(0,10); if(!dt) return;
+      (byDate[dt] = byDate[dt] || []).push({l:'L1', s:num(pick(r,'spend')), i:num(pick(r,'impr')),
+        c:num(pick(r,'clicks')), ld:num(pick(r,'leads')), q:num(pick(r,'leads'))*0.26, f:num(pick(r,'freq'))||1}); });
+    const days = Object.keys(byDate).sort().map((dt,i) => ({d:i+1, dt, r:byDate[dt]}));
+    if(!days.length) throw new Error('empty');
+    lastGood = {when:new Date(), days};
+    return days;
+  }catch(e){
+    if(lastGood){ $('#dlSample').textContent = t('stale',{t:fmt.clock(lastGood.when)}); return lastGood.days; }
+    $('#dlSample').textContent = t('sample'); return null;
+  }
+}
+
+/* ---------- boot ---------- */
+function renderAll(){
+  renderChrome(); renderKpis(); renderFlags(); renderPacing();
+  gDaily(); gCum(); gByLine(); gFunnel(); gVs(); gCre(); gMkt();
+  bars('#gPlace', DATA.splits.placement, 340);
+  bars('#gAge', DATA.splits.age, 340);
+  renderTable(); renderBench(); renderCad();
+}
+document.querySelectorAll('[data-period]').forEach(b => b.addEventListener('click', () => {
+  period = b.dataset.period; renderChrome(); renderKpis(); gByLine(); gFunnel(); renderTable(); }));
+$('#langBtn').addEventListener('click', () => { L = L === 'en' ? 'ar' : 'en'; renderAll(); });
+$('#themeBtn').addEventListener('click', () => { const h = document.documentElement;
+  h.dataset.theme = h.dataset.theme === 'ink' ? 'paper' : 'ink';
+  $('#themeBtn').textContent = h.dataset.theme === 'ink' ? t('themeAlt') : t('theme'); });
+$('#printBtn').addEventListener('click', () => window.print());
+$('#copyBtn').addEventListener('click', async () => {
+  try{ await navigator.clipboard.writeText('https://'+CONFIG.sharedLink);
+    $('#copyBtn').textContent = L === 'ar' ? 'تم' : 'copied';
+    setTimeout(() => $('#copyBtn').textContent = 'copy', 1600); }catch(e){ $('#copyBtn').textContent = 'n/a'; }
+});
+document.documentElement.dataset.theme = CONFIG.theme;
+(async () => { const live = await loadLive(); if(live) DATA.days = live; renderAll(); })();
+setInterval(async () => { const live = await loadLive(); if(live) DATA.days = live; renderAll(); }, CONFIG.refreshMins*60000);
+</script>
+</body>
+</html>
