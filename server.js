@@ -1,11 +1,19 @@
 'use strict';
 
-// Serves every page in pages/ under its own path. Adding a file to pages/ is
-// the entire deploy step — there is no registry to update and nothing to
-// configure in Railway. See AGENTS.md.
+// Serves every page in pages/ at its own link. Adding a file to pages/ is the
+// entire deploy step — there is no registry to update and nothing to configure
+// in Railway. See AGENTS.md.
 //
-//   pages/pricing.html        -> /pricing
-//   pages/report/index.html   -> /report        (plus /report/chart.png etc.)
+// Two routing modes run at once, so a page is reachable both ways:
+//
+//   subdomain   pricing.pages.example.com/   -> pages/pricing.html
+//   path        example.com/pricing          -> pages/pricing.html
+//
+// Subdomain routing needs a wildcard domain pointed at this service. Set
+// PAGE_DOMAIN to the wildcard base (e.g. "pages.example.com", comma-separated
+// for several) to scope it to that zone and to make the index link to
+// subdomains. Left unset, any host whose first label matches a page name is
+// served as that page, which is enough to work without configuration.
 //
 // Names must match SLUG_RE, so anything starting with "_" or "." is ignored —
 // use that for drafts and templates you do not want published.
@@ -17,6 +25,11 @@ const path = require('node:path');
 const PORT = process.env.PORT || 3000;
 const PAGES = path.join(__dirname, 'pages');
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
+
+const PAGE_DOMAINS = (process.env.PAGE_DOMAIN || '')
+  .split(',')
+  .map((d) => d.trim().toLowerCase().replace(/^\*\./, '').replace(/\.$/, ''))
+  .filter(Boolean);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -59,7 +72,7 @@ function listPages() {
   for (const e of entries) {
     if (!e.isFile() || !e.name.endsWith('.html')) continue;
     const slug = e.name.slice(0, -'.html'.length);
-    if (SLUG_RE.test(slug)) pages.set(slug, { file: path.join(PAGES, e.name), dir: null });
+    if (SLUG_RE.test(slug)) pages.set(slug, { slug, file: path.join(PAGES, e.name), dir: null });
   }
 
   // A directory with an index.html can carry sibling assets, so it wins over a
@@ -74,11 +87,41 @@ function listPages() {
         `warning: pages/${e.name}.html and pages/${e.name}/index.html both exist; serving the directory`,
       );
     }
-    pages.set(e.name, { file: index, dir });
+    pages.set(e.name, { slug: e.name, file: index, dir });
   }
 
   return new Map([...pages].sort(([a], [b]) => a.localeCompare(b)));
 }
+
+// What this Host header pins the request to:
+//   { page }      serve that page at "/"
+//   { missing }   a subdomain inside the configured zone with no such page
+//   null          not subdomain-routed; fall through to path routing
+function resolveHost(hostHeader, pages) {
+  if (!hostHeader) return null;
+  const host = hostHeader.split(':')[0].toLowerCase();
+  const labels = host.split('.');
+  if (labels.length < 2) return null; // localhost
+
+  // On Railway's own domain the first label is the service name, not a page.
+  if (host.endsWith('.up.railway.app')) return null;
+
+  if (PAGE_DOMAINS.length) {
+    const base = PAGE_DOMAINS.find((d) => host.endsWith('.' + d));
+    if (!base) return null;
+    const sub = host.slice(0, -(base.length + 1));
+    if (!SLUG_RE.test(sub)) return null; // multi-level or invalid
+    const page = pages.get(sub);
+    // Inside the zone the subdomain is a promise of a page, so a typo should
+    // say so rather than quietly serving the index.
+    return page ? { page } : { missing: `${sub}.${base}` };
+  }
+
+  const page = pages.get(labels[0]);
+  return page ? { page } : null;
+}
+
+const linkFor = (slug) => (PAGE_DOMAINS.length ? `https://${slug}.${PAGE_DOMAINS[0]}` : `/${slug}`);
 
 function titleOf(file, fallback) {
   try {
@@ -124,9 +167,11 @@ const SHELL = (title, body) => `<!doctype html>
       a.page:hover { background:color-mix(in srgb, var(--accent) 8%, transparent); }
       a.page:hover .slug { color:var(--accent); }
       .title { font-weight:500; }
-      .slug { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.8125rem; color:var(--muted); }
+      .slug { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.8125rem;
+        color:var(--muted); word-break:break-all; }
       .empty { padding:1rem; color:var(--muted); }
       footer { margin-top:1.5rem; color:var(--muted); font-size:.8125rem; }
+      footer a { color:var(--accent); }
       code { font-family:ui-monospace,"SF Mono",Menlo,monospace; background:var(--card);
         border:1px solid var(--line); border-radius:.25rem; padding:.1em .35em; }
     </style>
@@ -137,13 +182,14 @@ const SHELL = (title, body) => `<!doctype html>
 
 function indexPage() {
   const pages = listPages();
-  const items = [...pages]
-    .map(
-      ([slug, p]) =>
-        `<li><a class="page" href="/${slug}"><span class="title">${escape(
-          titleOf(p.file, slug),
-        )}</span><span class="slug">/${slug}</span></a></li>`,
-    )
+  const items = [...pages.values()]
+    .map((p) => {
+      const href = linkFor(p.slug);
+      const label = PAGE_DOMAINS.length ? `${p.slug}.${PAGE_DOMAINS[0]}` : `/${p.slug}`;
+      return `<li><a class="page" href="${escape(href)}"><span class="title">${escape(
+        titleOf(p.file, p.slug),
+      )}</span><span class="slug">${escape(label)}</span></a></li>`;
+    })
     .join('\n        ');
 
   return SHELL(
@@ -152,21 +198,26 @@ function indexPage() {
       <h1>railway-projects</h1>
       <p class="lede">${pages.size} page${pages.size === 1 ? '' : 's'}, each at its own link.</p>
       ${items ? `<ul>\n        ${items}\n      </ul>` : '<ul><li class="empty">No pages yet.</li></ul>'}
-      <footer>Add <code>pages/name.html</code> and push — it goes live at <code>/name</code>.</footer>`,
+      <footer>Add <code>pages/name.html</code> and push — it goes live at
+      <code>${escape(PAGE_DOMAINS.length ? `name.${PAGE_DOMAINS[0]}` : '/name')}</code>.</footer>`,
   );
 }
 
-function notFound(slug) {
-  const pages = listPages();
-  const items = [...pages]
-    .map(([s]) => `<li><a class="page" href="/${s}"><span class="slug">/${s}</span></a></li>`)
+function notFoundPage(what) {
+  const items = [...listPages().values()]
+    .map(
+      (p) =>
+        `<li><a class="page" href="${escape(linkFor(p.slug))}"><span class="slug">${escape(
+          PAGE_DOMAINS.length ? `${p.slug}.${PAGE_DOMAINS[0]}` : `/${p.slug}`,
+        )}</span></a></li>`,
+    )
     .join('\n        ');
 
   return SHELL(
     'Not found',
     `
       <h1>404</h1>
-      <p class="lede">No page at <code>/${escape(slug)}</code>.</p>
+      <p class="lede">No page at <code>${escape(what)}</code>.</p>
       ${items ? `<ul>\n        ${items}\n      </ul>` : ''}
       <footer><a href="/">All pages</a></footer>`,
   );
@@ -181,6 +232,9 @@ function send(req, res, status, type, body, cache) {
   });
   res.end(req.method === 'HEAD' ? undefined : body);
 }
+
+const notFound = (req, res, what) =>
+  send(req, res, 404, 'text/html; charset=utf-8', notFoundPage(what), 'no-store');
 
 function sendFile(req, res, file) {
   fs.readFile(file, (err, body) => {
@@ -202,6 +256,16 @@ function sendFile(req, res, file) {
   });
 }
 
+// Serve an asset sitting beside a directory-style page.
+function sendAsset(req, res, page, rest) {
+  if (!page.dir) return notFound(req, res, '/' + rest.join('/'));
+  const asset = path.join(page.dir, ...rest);
+  if (!asset.startsWith(page.dir + path.sep) || !isFile(asset)) {
+    return notFound(req, res, '/' + rest.join('/'));
+  }
+  sendFile(req, res, asset);
+}
+
 const server = http.createServer((req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.writeHead(405, { allow: 'GET, HEAD' }).end();
@@ -216,6 +280,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Must answer on every host, before any page routing.
   if (pathname === '/healthz') {
     send(req, res, 200, 'text/plain; charset=utf-8', 'ok', 'no-store');
     return;
@@ -225,37 +290,59 @@ const server = http.createServer((req, res) => {
 
   // Reject rather than silently normalise, so one resource has one URL.
   if (segments.some((s) => s === '.' || s === '..' || s.includes('\0'))) {
-    send(req, res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store');
+    notFound(req, res, pathname);
     return;
   }
 
+  const pages = listPages();
+  const host = resolveHost(req.headers.host, pages);
+
+  if (host && host.missing) {
+    notFound(req, res, host.missing);
+    return;
+  }
+
+  // Subdomain mode: the host pins the page, so it lives at "/" and its assets
+  // hang directly off the root.
+  if (host) {
+    if (segments.length === 0) sendFile(req, res, host.page.file);
+    else sendAsset(req, res, host.page, segments);
+    return;
+  }
+
+  // Path mode.
   if (segments.length === 0) {
     send(req, res, 200, 'text/html; charset=utf-8', indexPage(), 'no-cache');
     return;
   }
 
   const [slug, ...rest] = segments;
-  const page = listPages().get(slug);
+  const page = pages.get(slug);
 
   if (!page) {
-    send(req, res, 404, 'text/html; charset=utf-8', notFound(slug), 'no-store');
+    notFound(req, res, pathname);
     return;
   }
 
-  if (rest.length === 0) {
-    sendFile(req, res, page.file);
+  if (rest.length > 0) {
+    sendAsset(req, res, page, rest);
     return;
   }
 
-  // Asset beside a directory-style page. Only slugs and dot-free-of-traversal
-  // segments got this far, but re-check containment before touching disk.
-  const asset = path.join(page.dir || '', ...rest);
-  if (!page.dir || !asset.startsWith(page.dir + path.sep) || !isFile(asset)) {
-    send(req, res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store');
+  // Directory pages get a trailing slash so relative asset URLs resolve the
+  // same way they do on a subdomain.
+  if (page.dir && !pathname.endsWith('/')) {
+    const body = `moved to /${slug}/`;
+    res.writeHead(301, {
+      location: `/${slug}/`,
+      'content-type': 'text/plain; charset=utf-8',
+      'content-length': Buffer.byteLength(body),
+    });
+    res.end(req.method === 'HEAD' ? undefined : body);
     return;
   }
 
-  sendFile(req, res, asset);
+  sendFile(req, res, page.file);
 });
 
 if (!fs.existsSync(PAGES)) {
@@ -267,4 +354,9 @@ server.listen(PORT, '0.0.0.0', () => {
   const slugs = [...listPages().keys()];
   console.log(`listening on 0.0.0.0:${PORT}`);
   console.log(slugs.length ? `serving ${slugs.length} page(s): ${slugs.join(', ')}` : 'no pages yet');
+  console.log(
+    PAGE_DOMAINS.length
+      ? `subdomain routing scoped to: ${PAGE_DOMAINS.map((d) => `*.${d}`).join(', ')}`
+      : 'subdomain routing unscoped (set PAGE_DOMAIN to pin it to your wildcard zone)',
+  );
 });

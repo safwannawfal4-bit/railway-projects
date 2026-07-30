@@ -8,14 +8,14 @@ Single-file HTML pages, each served at its own link by one Railway service.
 pages/pricing.html   ->   https://<domain>/pricing
 ```
 
-**Live:** _not deployed yet_ — add the domain here once generated.
+**Live:** <https://railway-projects-production-0ea1.up.railway.app>
 
 ## Pages
 
-| Page                                          | URL               | What it is                                     |
-| --------------------------------------------- | ----------------- | ---------------------------------------------- |
-| [`hello-world.html`](pages/hello-world.html)   | `/hello-world`    | Deploy smoke test — shows host and healthcheck |
-| [`unit-converter.html`](pages/unit-converter.html) | `/unit-converter` | Length, mass, and temperature converter    |
+| Page                                               | Link                                                                                       | What it is                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| [`hello-world.html`](pages/hello-world.html)       | [/hello-world](https://railway-projects-production-0ea1.up.railway.app/hello-world)         | Deploy smoke test — shows host and healthcheck |
+| [`unit-converter.html`](pages/unit-converter.html) | [/unit-converter](https://railway-projects-production-0ea1.up.railway.app/unit-converter)   | Length, mass, and temperature converter        |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.
@@ -43,11 +43,24 @@ PORT=4000 npm start          # or pick a port
 No dependencies to install — the router is Node stdlib only. New files are
 picked up without a restart.
 
+## Give each page its own subdomain
+
+Paths work out of the box. To give every page its own hostname as well —
+`pricing.pages.example.com` — set this up once and it covers all future pages:
+
+1. **DNS**: wildcard `CNAME` `*.pages` → the target Railway shows for a custom
+   domain.
+2. **Railway** → Settings → Networking → Custom Domain → `*.pages.example.com`.
+3. **Railway** → Variables → `PAGE_DOMAIN=pages.example.com`.
+
+After that, adding `pages/pricing.html` gives you
+`https://pricing.pages.example.com` with no further setup. Path URLs keep
+working, and the index switches to linking subdomains.
+
 ## Deploy
 
 One service, connected to `main`, **no Root Directory set**. The manifest is at
-the repo root, so there is nothing to configure — generate a domain and every
-push ships every page.
+the repo root, so there is nothing to configure — every push ships every page.
 
 Full details, including why this is one service rather than one per page:
 **[AGENTS.md](AGENTS.md)**.
