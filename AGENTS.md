@@ -200,9 +200,14 @@ assets absolutely (`/report/chart.png`). Make them relative (`chart.png`).
 
 ## Branching
 
-- `main` is the default branch and should always be deployable — pushes to it
-  redeploy the service.
-- Work on a branch, then open a pull request into `main`.
+**Use `main`. Only `main`.** Commit and push straight to it — no feature
+branches, no pull requests, no `claude/*` working branches. This is the
+repository owner's standing instruction; don't create a branch "to be safe."
+
+- `main` is the default branch and must always be deployable — every push to it
+  redeploys the service and ships every page.
+- Because there is no review step, verify before pushing: run the checks in
+  [Before pushing](#before-pushing) rather than relying on a PR to catch things.
 - Prefix commit subjects with the page where it applies, e.g.
   `unit-converter: fix mobile layout`.
 
