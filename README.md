@@ -15,6 +15,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | Page                                               | Link                                                                                       | What it is                                     |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------- |
 | [`hello-world.html`](pages/hello-world.html)       | [/hello-world](https://railway-projects-production-0ea1.up.railway.app/hello-world)         | Deploy smoke test — shows host and healthcheck |
+| [`routing-check.html`](pages/routing-check.html)   | [/routing-check](https://railway-projects-production-0ea1.up.railway.app/routing-check)     | Reports whether you arrived by path or subdomain |
 | [`unit-converter.html`](pages/unit-converter.html) | [/unit-converter](https://railway-projects-production-0ea1.up.railway.app/unit-converter)   | Length, mass, and temperature converter        |
 
 `/` lists them all automatically — the table above is just for browsing on

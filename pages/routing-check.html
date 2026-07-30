@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>routing-check</title>
+    <style>
+      :root {
+        --bg: #faf9f7;
+        --fg: #17161a;
+        --muted: #6b6870;
+        --line: #e3e0da;
+        --card: #fff;
+        --accent: #b8452f;
+        --ok: #0f7b4f;
+        --wait: #8a7a3d;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131215;
+          --fg: #f2f0ee;
+          --muted: #9a969f;
+          --line: #2c2a30;
+          --card: #1b1a1f;
+          --accent: #ff8a6b;
+          --ok: #4ade9b;
+          --wait: #e0c56a;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: start center;
+        padding: 3rem 1.5rem;
+        background: var(--bg);
+        color: var(--fg);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 36rem;
+      }
+      h1 {
+        margin: 0 0 0.25rem;
+        font-size: clamp(1.75rem, 6vw, 2.25rem);
+        letter-spacing: -0.02em;
+      }
+      p.lede {
+        margin: 0 0 2rem;
+        color: var(--muted);
+      }
+      .mode {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem 0.75rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--accent);
+        border-radius: 0.5rem;
+        background: var(--card);
+      }
+      .mode strong {
+        font-size: 1.0625rem;
+      }
+      .mode span {
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      dl {
+        margin: 0 0 1.75rem;
+        border: 1px solid var(--line);
+        border-radius: 0.75rem;
+        background: var(--card);
+        overflow: hidden;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.25rem 1rem;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--line);
+      }
+      .row:first-child {
+        border-top: 0;
+      }
+      dt {
+        color: var(--muted);
+        font-size: 0.875rem;
+      }
+      dd {
+        margin: 0;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 0.875rem;
+        word-break: break-all;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .wait {
+        color: var(--wait);
+      }
+      h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      ol {
+        margin: 0;
+        padding-left: 1.25rem;
+        color: var(--muted);
+        font-size: 0.9375rem;
+      }
+      ol li {
+        margin-bottom: 0.35rem;
+      }
+      footer {
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.8125rem;
+      }
+      a {
+        color: var(--accent);
+      }
+      code {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 0.25rem;
+        padding: 0.1em 0.35em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>routing-check</h1>
+      <p class="lede">
+        Added as a file, live at its own link with no configuration. This page
+        also reports which of the two routing modes you reached it through.
+      </p>
+
+      <div class="mode">
+        <strong id="mode">…</strong>
+        <span id="mode-why"></span>
+      </div>
+
+      <dl>
+        <div class="row"><dt>Source</dt><dd>pages/routing-check.html</dd></div>
+        <div class="row"><dt>Host</dt><dd id="host">—</dd></div>
+        <div class="row"><dt>Path</dt><dd id="path">—</dd></div>
+        <div class="row"><dt>Loaded at</dt><dd id="loaded">—</dd></div>
+        <div class="row"><dt>Healthcheck</dt><dd id="health">checking…</dd></div>
+      </dl>
+
+      <h2>What to expect</h2>
+      <ol>
+        <li>
+          On the Railway domain, <code>/routing-check</code> reads
+          <strong>path</strong>. That works with no setup.
+        </li>
+        <li>
+          Once a wildcard domain is attached,
+          <code>routing-check.&lt;zone&gt;</code> reads
+          <strong>subdomain</strong> — confirming the DNS record, the wildcard,
+          and <code>PAGE_DOMAIN</code> are all correct.
+        </li>
+      </ol>
+
+      <footer><a href="/">All pages</a></footer>
+    </main>
+
+    <script>
+      const el = (id) => document.getElementById(id);
+      const path = location.pathname;
+
+      // The router only serves a page at "/" when the Host pins it to that
+      // page, so the path alone distinguishes the two modes.
+      const isSubdomain = path === '/' || path === '';
+
+      el('mode').textContent = isSubdomain ? 'subdomain routing' : 'path routing';
+      el('mode').className = isSubdomain ? 'ok' : 'wait';
+      el('mode-why').textContent = isSubdomain
+        ? `this page owns ${location.hostname}`
+        : 'served from a path — attach a wildcard domain for a per-page hostname';
+
+      el('host').textContent = location.host || 'file://';
+      el('path').textContent = path || '/';
+      el('loaded').textContent = new Date().toISOString();
+
+      fetch('/healthz')
+        .then((r) => r.text().then((t) => `${r.status} ${t.trim()}`))
+        .then((t) => {
+          el('health').textContent = t;
+          if (t.startsWith('200')) el('health').className = 'ok';
+        })
+        .catch((e) => {
+          el('health').textContent = `unreachable (${e.message})`;
+        });
+    </script>
+  </body>
+</html>
