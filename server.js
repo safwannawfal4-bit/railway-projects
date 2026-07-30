@@ -196,7 +196,9 @@ function indexPage() {
     'railway-projects',
     `
       <h1>railway-projects</h1>
-      <p class="lede">${pages.size} page${pages.size === 1 ? '' : 's'}, each at its own link.</p>
+      <p class="lede">${
+        pages.size === 1 ? '1 page, at its own link.' : `${pages.size} pages, each at its own link.`
+      }</p>
       ${items ? `<ul>\n        ${items}\n      </ul>` : '<ul><li class="empty">No pages yet.</li></ul>'}
       <footer>Add <code>pages/name.html</code> and push — it goes live at
       <code>${escape(PAGE_DOMAINS.length ? `name.${PAGE_DOMAINS[0]}` : '/name')}</code>.</footer>`,
