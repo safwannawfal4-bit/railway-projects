@@ -54,6 +54,38 @@ railway-projects/
         └── chart.png            ->  /report/chart.png
 ```
 
+## The standard request: "deploy this file"
+
+The owner's normal workflow is to open a fresh chat, hand over an HTML file
+(attached, pasted, or described), and expect back a working link. When that
+happens, do exactly this — no questions unless the request is genuinely
+ambiguous:
+
+1. **Pick the slug.** Use the supplied file name if it fits the naming rules
+   below; otherwise derive a short kebab-case slug from the page's `<title>` or
+   content (`Spartan Gym Offer.html` → `spartan-gym-offer`). If a page with
+   that slug already exists, treat the new file as its replacement only when it
+   is clearly the same page; otherwise pick a fresh slug.
+2. **Save it** as `pages/<slug>.html`, keeping the content as delivered. Fix
+   nothing silently. If the file violates a hard rule in
+   [Writing the HTML](#writing-the-html) — external CDN requests, a missing
+   `<title>` — fix it minimally, say so, and list what changed.
+3. **Verify locally**: `npm start`, then confirm `/<slug>` returns 200, the
+   page renders, and it appears on the index at `/`.
+4. **Commit and push to `main`** (the only branch — see
+   [Branching](#branching)). The push is the deploy.
+5. **Reply with the link**:
+   `https://railway-projects-production-0ea1.up.railway.app/<slug>` — the
+   current live domain, also recorded in `README.md`. Say the deploy takes
+   about a minute after the push. If Railway egress is blocked in the session
+   (it usually is), say the link is constructed, not confirmed — never claim
+   you watched the deploy succeed.
+6. **Add the page to the table in `README.md`** in the same commit.
+
+If a wildcard domain has been attached and `PAGE_DOMAIN` is set (see
+[Own subdomain per page](#own-subdomain-per-page)), give the subdomain link
+`https://<slug>.<zone>` as the primary link, with the path URL as fallback.
+
 ## Adding a page
 
 ```sh
