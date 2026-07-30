@@ -1,18 +1,36 @@
 # railway-projects
 
-A monorepo of small projects deployed on [Railway](https://railway.com). Each
-top-level directory is a self-contained, independently deployable service.
+Single-page HTML apps. Each page is self-contained and deployed as its **own
+Railway service** inside one Railway project, so each has its own URL and its
+own deploy lifecycle.
 
-## Projects
+One directory = one HTML file = one Railway service = one URL.
 
-_None yet._
+## Pages
 
-## Getting started
+| Page                                 | What it is                                     | Live URL           |
+| ------------------------------------ | ---------------------------------------------- | ------------------ |
+| [`hello-world`](hello-world/)         | Deploy smoke test — shows host and healthcheck | _not deployed yet_ |
+| [`unit-converter`](unit-converter/)   | Length, mass, and temperature converter        | _not deployed yet_ |
 
-Pick a project directory and follow its own `README.md`. Each project keeps its
-dependencies, config, and run instructions local to itself.
+## Add a page
 
-## Contributing
+```sh
+./new-page.sh my-page          # scaffolds my-page/ from _template/
+cd my-page && npm start        # http://localhost:3000
+```
 
-See [CLAUDE.md](CLAUDE.md) for repository conventions — layout, configuration
-and secrets handling, how to add a new project, and branching.
+Write the page into `my-page/index.html`, push, then add the Railway service
+with **Root Directory** `/my-page` and generate a domain.
+
+Full instructions: **[AGENTS.md](AGENTS.md)**.
+
+## Run any page locally
+
+```sh
+cd <page-name>
+npm start                      # http://localhost:3000
+PORT=4000 npm start            # or pick a port
+```
+
+No dependencies to install — the server is Node stdlib only.
