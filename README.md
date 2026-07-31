@@ -15,6 +15,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | Page                                                                             | Link                                                                                                                   | What it is                                           |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | [`select-property-daily-numbers.html`](pages/select-property-daily-numbers.html) | [/select-property-daily-numbers](https://railway-projects-production-0ea1.up.railway.app/select-property-daily-numbers) | ITP Live daily performance sheet for Select Property |
+| [`vivo-influencer-report.html`](pages/vivo-influencer-report.html)               | [/vivo-influencer-report](https://railway-projects-production-0ea1.up.railway.app/vivo-influencer-report)               | ITP Live influencer campaign report for vivo (X80)   |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.
