@@ -317,7 +317,7 @@ License: MIT
   <header class="top">
     <div class="mark vivomark" role="img" aria-label="vivo"></div>
     <div class="sep"></div>
-    <div class="ctx" id="ctxLine">X80 series · influencer report</div>
+    <div class="ctx" id="ctxLine">V series · influencer report</div>
     <div class="spacer"></div>
     <span class="byline hdrmark"><span>by</span><span class="itp" role="img" aria-label="ITP Live"></span></span>
     <div class="sep hdrmark"></div>
@@ -328,7 +328,7 @@ License: MIT
   </header>
 
   <section class="readout rise">
-    <div class="lede">The X80 campaign, <b>in focus</b>.</div>
+    <div class="lede">The V series campaign, <b>in focus</b>.</div>
     <div class="sub" id="scopeLine">Every creator, post and dirham, filtered live.</div>
     <div class="figs" id="figs"></div>
   </section>
@@ -391,7 +391,7 @@ License: MIT
    ══════════════════════════════════════════════════════════ */
 const CONFIG = {
   client:      "vivo",
-  context:     "X80 series · influencer report",
+  context:     "V series · influencer report",
   currency:    "AED",
   accessCode:  "vivo-2026-K7XQ",
   // Paste the published Google Sheet CSV link here to go live.
@@ -437,32 +437,32 @@ function buildColMap(headers){
    CONFIG.sheetUrl. Influencers are anonymised placeholders. */
 const HEADERS = ["Client Name","Campaign Name","Market","Client's Industry","Influencer Full name","Influencer Handle","Influencer's Vertical","Platforms","Deliverable","Followers","Reach","Impressions/Video Views","Interactions","Client Cost"];
 const DEMO = [
-["vivo","X80 Launch","UAE","Consumer Electronics","Influencer 1","@influencer1","Tech","Instagram","Reel",850000,412000,596000,24700,38000],
-["vivo","X80 Launch","UAE","Consumer Electronics","Influencer 1","@influencer1","Tech","Instagram","Story Set",850000,268000,331000,9100,14000],
-["vivo","X80 Zeiss Portrait","UAE","Consumer Electronics","Influencer 2","@influencer2","Photography","Instagram","Carousel",420000,236000,289000,19400,17500],
-["vivo","X80 Zeiss Portrait","UAE","Consumer Electronics","Influencer 2","@influencer2","Photography","YouTube","Integration",420000,181000,214000,11600,26000],
-["vivo","X80 Launch","KSA","Consumer Electronics","Influencer 3","@influencer3","Lifestyle","TikTok","Video",1200000,742000,1180000,68300,52000],
-["vivo","X80 Launch","KSA","Consumer Electronics","Influencer 3","@influencer3","Lifestyle","TikTok","Video",1200000,619000,948000,51200,52000],
-["vivo","X80 Launch","KSA","Consumer Electronics","Influencer 4","@influencer4","Gaming","YouTube","Integration",640000,298000,376000,17800,44000],
-["vivo","X80 Zeiss Portrait","KSA","Consumer Electronics","Influencer 4","@influencer4","Gaming","YouTube","Shorts",640000,214000,301000,13900,19000],
-["vivo","X80 Zeiss Portrait","UAE","Consumer Electronics","Influencer 5","@influencer5","Fashion","Instagram","Reel",310000,168000,205000,14200,15500],
-["vivo","X80 Zeiss Portrait","UAE","Consumer Electronics","Influencer 5","@influencer5","Fashion","Instagram","Story Set",310000,104000,126000,4300,7000],
-["vivo","X80 Launch","KSA","Consumer Electronics","Influencer 6","@influencer6","Tech","TikTok","Video",980000,588000,893000,47100,41000],
-["vivo","X80 Launch","KSA","Consumer Electronics","Influencer 6","@influencer6","Tech","YouTube","Unboxing",980000,326000,418000,22400,36000],
-["vivo","X80 Zeiss Portrait","Kuwait","Consumer Electronics","Influencer 7","@influencer7","Travel","Instagram","Carousel",275000,141000,172000,10800,12000],
-["vivo","X80 Zeiss Portrait","Kuwait","Consumer Electronics","Influencer 7","@influencer7","Travel","Instagram","Reel",275000,159000,198000,13100,13500],
-["vivo","X80 Zeiss Portrait","Qatar","Consumer Electronics","Influencer 8","@influencer8","Photography","Instagram","Carousel",190000,112000,138000,11900,9500],
-["vivo","X80 Launch","Kuwait","Consumer Electronics","Influencer 9","@influencer9","Lifestyle","Snapchat","Story Set",520000,287000,344000,12600,21000],
-["vivo","X80 Launch","Kuwait","Consumer Electronics","Influencer 9","@influencer9","Lifestyle","Snapchat","Story Set",520000,241000,296000,9800,21000],
-["vivo","X80 Launch","UAE","Consumer Electronics","Influencer 10","@influencer10","Gaming","TikTok","Video",730000,468000,712000,38900,33000],
-["vivo","X80 Launch","UAE","Consumer Electronics","Influencer 10","@influencer10","Gaming","TikTok","Video",730000,391000,604000,29700,33000],
-["vivo","X80 Launch","KSA","Consumer Electronics","Influencer 11","@influencer11","Fashion","Snapchat","Story Set",1450000,806000,1024000,31500,58000],
-["vivo","X80 Zeiss Portrait","KSA","Consumer Electronics","Influencer 11","@influencer11","Fashion","Instagram","Reel",1450000,691000,912000,54800,49000],
-["vivo","X80 Zeiss Portrait","Qatar","Consumer Electronics","Influencer 12","@influencer12","Tech","YouTube","Integration",360000,186000,241000,12300,23000],
-["vivo","X80 Zeiss Portrait","Qatar","Consumer Electronics","Influencer 12","@influencer12","Tech","YouTube","Shorts",360000,128000,177000,8600,11000],
-["vivo","X80 Launch","UAE","Consumer Electronics","Influencer 2","@influencer2","Photography","Instagram","Reel",420000,214000,268000,17300,17500],
-["vivo","X80 Launch","Qatar","Consumer Electronics","Influencer 8","@influencer8","Photography","Instagram","Reel",190000,121000,152000,12400,9500],
-["vivo","X80 Zeiss Portrait","KSA","Consumer Electronics","Influencer 3","@influencer3","Lifestyle","Instagram","Carousel",1200000,486000,613000,33900,38000]
+["vivo","V series Launch","UAE","Consumer Electronics","Influencer 1","@influencer1","Tech","Instagram","Reel",850000,412000,596000,24700,38000],
+["vivo","V series Launch","UAE","Consumer Electronics","Influencer 1","@influencer1","Tech","Instagram","Story Set",850000,268000,331000,9100,14000],
+["vivo","V series Zeiss Portrait","UAE","Consumer Electronics","Influencer 2","@influencer2","Photography","Instagram","Carousel",420000,236000,289000,19400,17500],
+["vivo","V series Zeiss Portrait","UAE","Consumer Electronics","Influencer 2","@influencer2","Photography","YouTube","Integration",420000,181000,214000,11600,26000],
+["vivo","V series Launch","KSA","Consumer Electronics","Influencer 3","@influencer3","Lifestyle","TikTok","Video",1200000,742000,1180000,68300,52000],
+["vivo","V series Launch","KSA","Consumer Electronics","Influencer 3","@influencer3","Lifestyle","TikTok","Video",1200000,619000,948000,51200,52000],
+["vivo","V series Launch","KSA","Consumer Electronics","Influencer 4","@influencer4","Gaming","YouTube","Integration",640000,298000,376000,17800,44000],
+["vivo","V series Zeiss Portrait","KSA","Consumer Electronics","Influencer 4","@influencer4","Gaming","YouTube","Shorts",640000,214000,301000,13900,19000],
+["vivo","V series Zeiss Portrait","UAE","Consumer Electronics","Influencer 5","@influencer5","Fashion","Instagram","Reel",310000,168000,205000,14200,15500],
+["vivo","V series Zeiss Portrait","UAE","Consumer Electronics","Influencer 5","@influencer5","Fashion","Instagram","Story Set",310000,104000,126000,4300,7000],
+["vivo","V series Launch","KSA","Consumer Electronics","Influencer 6","@influencer6","Tech","TikTok","Video",980000,588000,893000,47100,41000],
+["vivo","V series Launch","KSA","Consumer Electronics","Influencer 6","@influencer6","Tech","YouTube","Unboxing",980000,326000,418000,22400,36000],
+["vivo","V series Zeiss Portrait","Kuwait","Consumer Electronics","Influencer 7","@influencer7","Travel","Instagram","Carousel",275000,141000,172000,10800,12000],
+["vivo","V series Zeiss Portrait","Kuwait","Consumer Electronics","Influencer 7","@influencer7","Travel","Instagram","Reel",275000,159000,198000,13100,13500],
+["vivo","V series Zeiss Portrait","Qatar","Consumer Electronics","Influencer 8","@influencer8","Photography","Instagram","Carousel",190000,112000,138000,11900,9500],
+["vivo","V series Launch","Kuwait","Consumer Electronics","Influencer 9","@influencer9","Lifestyle","Snapchat","Story Set",520000,287000,344000,12600,21000],
+["vivo","V series Launch","Kuwait","Consumer Electronics","Influencer 9","@influencer9","Lifestyle","Snapchat","Story Set",520000,241000,296000,9800,21000],
+["vivo","V series Launch","UAE","Consumer Electronics","Influencer 10","@influencer10","Gaming","TikTok","Video",730000,468000,712000,38900,33000],
+["vivo","V series Launch","UAE","Consumer Electronics","Influencer 10","@influencer10","Gaming","TikTok","Video",730000,391000,604000,29700,33000],
+["vivo","V series Launch","KSA","Consumer Electronics","Influencer 11","@influencer11","Fashion","Snapchat","Story Set",1450000,806000,1024000,31500,58000],
+["vivo","V series Zeiss Portrait","KSA","Consumer Electronics","Influencer 11","@influencer11","Fashion","Instagram","Reel",1450000,691000,912000,54800,49000],
+["vivo","V series Zeiss Portrait","Qatar","Consumer Electronics","Influencer 12","@influencer12","Tech","YouTube","Integration",360000,186000,241000,12300,23000],
+["vivo","V series Zeiss Portrait","Qatar","Consumer Electronics","Influencer 12","@influencer12","Tech","YouTube","Shorts",360000,128000,177000,8600,11000],
+["vivo","V series Launch","UAE","Consumer Electronics","Influencer 2","@influencer2","Photography","Instagram","Reel",420000,214000,268000,17300,17500],
+["vivo","V series Launch","Qatar","Consumer Electronics","Influencer 8","@influencer8","Photography","Instagram","Reel",190000,121000,152000,12400,9500],
+["vivo","V series Zeiss Portrait","KSA","Consumer Electronics","Influencer 3","@influencer3","Lifestyle","Instagram","Carousel",1200000,486000,613000,33900,38000]
 ];
 function demoRows(){
   return DEMO.map(r=>{ const o={}; HEADERS.forEach((h,i)=>o[h]=r[i]); return o; });
