@@ -18,6 +18,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | [`vivo-influencer-report.html`](pages/vivo-influencer-report.html)               | [/vivo-influencer-report](https://railway-projects-production-0ea1.up.railway.app/vivo-influencer-report)               | ITP Live influencer campaign report for vivo (V series) |
 | [`vivo-paid-amplification-report.html`](pages/vivo-paid-amplification-report.html) | [/vivo-paid-amplification-report](https://railway-projects-production-0ea1.up.railway.app/vivo-paid-amplification-report) | ITP Live paid amplification report for vivo (V series) |
 | [`uae-swat-challenge.html`](pages/uae-swat-challenge.html)                       | [/uae-swat-challenge](https://railway-projects-production-0ea1.up.railway.app/uae-swat-challenge)                       | Gated campaign performance dashboard for the UAE SWAT Challenge |
+| [`sta-winter-readiness.html`](pages/sta-winter-readiness.html)                   | [/sta-winter-readiness](https://railway-projects-production-0ea1.up.railway.app/sta-winter-readiness)                   | Gated influencer roster dashboard for STA's The Second Winter |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.
