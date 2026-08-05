@@ -559,6 +559,7 @@ async function fetchCSV(url){
   return Papa.parse(txt, {header:true, dynamicTyping:true, skipEmptyLines:true}).data;
 }
 async function loadData(){
+  STATIC.clear(); DERIVED.clear();   // caches below are keyed on the dataset
   const anySheet = Object.values(CONFIG.sheets).some(u => u);
   if(!anySheet){ state.data = DEMO; state.live = false; $("#demoNote").style.display = "block"; return; }
   try{
@@ -588,9 +589,27 @@ async function loadData(){
 }
 function refreshData(){ loadData().then(render); }
 
+/* ---------------- derived-data caches ----------------
+   Widgets on a tab ask for the same slices over and over (paidRows ran 6x per
+   render, salesRows 5x). DERIVED is cleared at the top of every render, so a
+   slice is filtered once per pass; STATIC survives renders and is cleared only
+   when the underlying data is reloaded. Array results are handed out as copies
+   so a widget that sorts its rows can't disturb the next one. */
+const DERIVED = new Map(), STATIC = new Map();
+function memo(cache, key, fn){
+  if(cache.has(key)) return cache.get(key);
+  const v = fn(); cache.set(key, v); return v;
+}
+function filterSig(tab){
+  const f = state.filters[tab] || {};
+  return Object.keys(f).sort().map(k => k + ":" + [...f[k]].sort().join(",")).join("|");
+}
+
 /* ---------------- aggregations ---------------- */
 function paidRows(from, to, filtered=true){
-  return state.data.paid.filter(r => inRange(r.date, from, to) && (!filtered || passes("performance", r, (row,dim)=>row[dim])));
+  return memo(DERIVED, `paid|${from}|${to}|${filtered}|${filtered?filterSig("performance"):""}`, () =>
+    state.data.paid.filter(r => inRange(r.date, from, to) && (!filtered || passes("performance", r, (row,dim)=>row[dim])))
+  ).slice();
 }
 function paidTotals(rows){
   const s = sum(rows, r=>r.spend), i = sum(rows, r=>r.impressions), c = sum(rows, r=>r.clicks),
@@ -598,40 +617,66 @@ function paidTotals(rows){
   return { spend:s, impressions:i, clicks:c, conversions:cv, revenue:rv, reach:rc,
     ctr:i?c/i:0, cpc:c?s/c:0, cpm:i?s/i*1000:0, cpa:cv?s/cv:0, roas:s?rv/s:0 };
 }
-function salesRows(from, to){ return state.data.salesDaily.filter(r => inRange(r.date, from, to)); }
-function webRows(from, to){ return state.data.webDaily.filter(r => inRange(r.date, from, to)); }
-function socialRows(from, to){ return state.data.socialDaily.filter(r => inRange(r.date, from, to)); }
+function salesRows(from, to){ return memo(DERIVED, `sales|${from}|${to}`, () => state.data.salesDaily.filter(r => inRange(r.date, from, to))).slice(); }
+function webRows(from, to){ return memo(DERIVED, `web|${from}|${to}`, () => state.data.webDaily.filter(r => inRange(r.date, from, to))).slice(); }
+function socialRows(from, to){ return memo(DERIVED, `social|${from}|${to}`, () => state.data.socialDaily.filter(r => inRange(r.date, from, to))).slice(); }
 function socialPlatforms(){ const f = state.filters.social.platform; const all = ["Instagram","TikTok","Facebook"]; return f && f.size ? all.filter(p=>f.has(p)) : all; }
 function infList(from, to){
-  return state.data.influencers
-    .filter(i => passes("influencer", i, (row,dim)=>row[dim]))
-    .map(i => {
-      const dl = i.deliverables.filter(d => inRange(d.date, from, to));
-      if(!dl.length) return null;
-      const frac = dl.length / i.deliverables.length;
-      return {...i,
-        views: sum(dl, d=>d.views), engagements: sum(dl, d=>d.engagements),
-        cost: Math.round(i.cost*frac), redemptions: Math.round(i.redemptions*frac), revenue: +(i.revenue*frac).toFixed(0),
-        deliverablesIn: dl };
-    }).filter(Boolean);
+  return memo(DERIVED, `inf|${from}|${to}|${filterSig("influencer")}`, () =>
+    state.data.influencers
+      .filter(i => passes("influencer", i, (row,dim)=>row[dim]))
+      .map(i => {
+        const dl = i.deliverables.filter(d => inRange(d.date, from, to));
+        if(!dl.length) return null;
+        const frac = dl.length / i.deliverables.length;
+        return {...i,
+          views: sum(dl, d=>d.views), engagements: sum(dl, d=>d.engagements),
+          cost: Math.round(i.cost*frac), redemptions: Math.round(i.redemptions*frac), revenue: +(i.revenue*frac).toFixed(0),
+          deliverablesIn: dl };
+      }).filter(Boolean)
+  ).slice();
 }
 function infDailyRows(from, to){
-  return state.data.infDaily.filter(r => inRange(r.date, from, to) &&
-    passes("influencer", r, (row,dim) => dim === "creator" ? row.name : (state.data.influencers.find(i=>i.name===row.name)||{})[dim]));
+  return memo(DERIVED, `infDaily|${from}|${to}|${filterSig("influencer")}`, () => {
+    // one name -> influencer index instead of a linear find() per row
+    const byName = memo(STATIC, "infByName", () => new Map(state.data.influencers.map(i => [i.name, i])));
+    return state.data.infDaily.filter(r => inRange(r.date, from, to) &&
+      passes("influencer", r, (row,dim) => dim === "creator" ? row.name : (byName.get(row.name)||{})[dim]));
+  }).slice();
 }
 function mktSpend(from, to){
-  const p = sum(paidRows(from, to, false), r=>r.spend);
-  const inf = state.data.influencers.reduce((a,i)=>{
-    const dl = i.deliverables.filter(d => inRange(d.date, from, to));
-    return a + i.cost * (dl.length / i.deliverables.length);
-  }, 0);
-  return { paid: p, inf, total: p + inf };
+  return {...memo(DERIVED, `mkt|${from}|${to}`, () => {
+    const p = sum(paidRows(from, to, false), r=>r.spend);
+    const inf = state.data.influencers.reduce((a,i)=>{
+      const dl = i.deliverables.filter(d => inRange(d.date, from, to));
+      return a + i.cost * (dl.length / i.deliverables.length);
+    }, 0);
+    return { paid: p, inf, total: p + inf };
+  })};
 }
 </script>
 
 <script>
 /* ================= chart plumbing ================= */
-function destroyCharts(){ charts.forEach(c => c.destroy()); charts = []; }
+/* Chart instances are pooled and reused, not rebuilt.
+   Constructing a Chart was ~100% of the cost of a render — building one costs
+   roughly 60-85ms on a mid-range phone, so a five-chart tab spent a third of a
+   second rebuilding charts that mostly just needed new numbers. Each chart is
+   keyed by tab/widget, and on a re-render its live canvas is moved into the
+   freshly built panel and updated in place. Anything that can't be reused
+   (a different chart type) falls back to a fresh build. */
+const chartPool = new Map();
+let widgetKey = null, chartSeq = 0;
+function destroyCharts(){
+  charts.forEach(c => { if(!poolHolds(c)) c.destroy(); });
+  charts = [];
+}
+function poolHolds(c){ for(const v of chartPool.values()) if(v === c) return true; return false; }
+function dropPooled(key){
+  const c = chartPool.get(key);
+  if(c){ try{ c.destroy(); }catch(e){} chartPool.delete(key); }
+}
+function clearChartPool(){ [...chartPool.keys()].forEach(dropPooled); charts = []; }
 function chartDefaults(){
   Chart.defaults.font.family = LANG === "ar" ? "Cairo, Archivo, sans-serif" : "Archivo, sans-serif";
   Chart.defaults.font.size = 11;
@@ -639,7 +684,7 @@ function chartDefaults(){
 }
 function baseOpts(o = {}){
   return {
-    responsive:true, maintainAspectRatio:false, animation:{duration:250},
+    responsive:true, maintainAspectRatio:false, animation:{duration:chartAnim},
     interaction:{mode:o.index?"index":"nearest", intersect:!o.index},
     plugins:{
       legend: o.legend ? {position:"top", align:"start", labels:{usePointStyle:true, pointStyle:"rectRounded", boxWidth:9, boxHeight:9, padding:14, color:cssVar("--text"), font:{weight:700}}} : {display:false},
@@ -655,7 +700,33 @@ function baseOpts(o = {}){
 }
 function xTime(){ return { grid:{display:false}, border:{display:false}, ticks:{maxTicksLimit:7, maxRotation:0, font:{weight:600}} }; }
 function yLin(fmt){ return { grid:{color:cssVar("--grid-line")}, border:{display:false}, beginAtZero:true, ticks:{maxTicksLimit:6, font:{weight:600}, callback:v=>fmt?fmt(v):v} }; }
-function mkChart(canvas, cfg){ const c = new Chart(canvas, cfg); charts.push(c); return c; }
+function mkChart(canvas, cfg){
+  const key = widgetKey ? widgetKey + "#" + (chartSeq++) : null;
+  const pooled = key ? chartPool.get(key) : null;
+  if(pooled){
+    if(pooled.config.type === cfg.type && pooled.canvas){
+      try{
+        pooled.unbindEvents();                  // listeners still point at the old, discarded panel
+        canvas.replaceWith(pooled.canvas);      // move the live canvas into the new one
+        pooled.data = cfg.data;
+        pooled.options = cfg.options;
+        pooled.update("none");
+        pooled.bindEvents();
+        pooled.resize();
+        charts.push(pooled);
+        return pooled;
+      }catch(e){
+        console.error("chart reuse " + key, e);  // fall through to a clean rebuild
+        if(pooled.canvas && pooled.canvas.isConnected && !canvas.isConnected) pooled.canvas.replaceWith(canvas);
+        dropPooled(key);
+      }
+    } else dropPooled(key);
+  }
+  const c = new Chart(canvas, cfg);
+  if(key) chartPool.set(key, c);
+  charts.push(c);
+  return c;
+}
 const valueLabels = {
   id:"valueLabels",
   afterDatasetsDraw(chart, args, opts){
@@ -687,8 +758,9 @@ function makeTable(el, id, cols, rows, opts = {}){
   let h = `<div class="tbl-wrap${opts.wide ? " wide" : ""}"><table><thead><tr>`;
   cols.forEach(c => { h += `<th class="${c.num?"num":""}" data-k="${c.key}">${esc(c.label)}${st.key===c.key?`<span class="arrow">${st.dir>0?"▲":"▼"}</span>`:""}</th>`; });
   h += "</tr></thead><tbody>";
+  const idx = new Map(rows.map((r,i) => [r,i]));   // beats indexOf() per row
   sorted.forEach((r,i) => {
-    h += `<tr data-i="${rows.indexOf(r)}" class="${opts.selected && opts.selected(r) ? "sel" : ""}">`;
+    h += `<tr data-i="${idx.get(r)}" class="${opts.selected && opts.selected(r) ? "sel" : ""}">`;
     cols.forEach(c => { h += `<td class="${c.num?"num":""}">${c.render ? c.render(r) : esc(r[c.key] ?? "")}</td>`; });
     h += "</tr>";
   });
@@ -1163,7 +1235,23 @@ function widgetTitle(tab,id){
 
 /* ================= render orchestration ================= */
 let lastOpenDrop = null;
+let renderPending = false, lastRenderedTab = null;
+const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let chartAnim = 250;
+/* Coalesce into one frame: ticking three filter boxes quickly used to run three
+   full rebuilds back to back. The click handler now returns immediately, so the
+   pressed state paints before the work starts. */
 function render(){
+  if(renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => { renderPending = false; renderNow(); });
+}
+function renderNow(){
+  DERIVED.clear();
+  // Charts animate when you land on a tab, not on every filter tick — re-running
+  // a 250ms entry animation on every chart after each click reads as lag.
+  chartAnim = (REDUCED_MOTION || state.tab === lastRenderedTab) ? 0 : 250;
+  lastRenderedTab = state.tab;
   destroyCharts(); chartDefaults();
   renderTabs(); renderControls(); renderBanner(); renderPeriod(); renderView(); renderAdmin();
 }
@@ -1202,22 +1290,38 @@ function renderControls(){
   };
   $$("details.fdrop").forEach(d => d.addEventListener("toggle", () => { lastOpenDrop = d.open ? d.dataset.k : null; }));
 }
+/* The dropdown values are a scan of the whole dataset, so they are cached until
+   the data reloads. Labels stay live — they follow the language toggle. */
+function dimValues(tab){
+  return memo(STATIC, "dims|" + tab, () => {
+    const d = state.data;
+    const uniq = (arr,f) => [...new Set(arr.map(f))].filter(x => x != null && x !== "—").sort();
+    if(tab === "performance") return {
+      platform: uniq(d.paid,r=>r.platform), funnel: uniq(d.paid,r=>r.funnel),
+      objective: uniq(d.paid,r=>r.objective), market: uniq(d.paid,r=>r.market),
+      language: uniq(d.paid,r=>r.language), postType: uniq(d.paid,r=>r.postType),
+      creativeType: uniq(d.paid,r=>r.creativeType)
+    };
+    if(tab === "social") return {platform:["Instagram","TikTok","Facebook"]};
+    if(tab === "influencer") return {tier:["Macro","Micro","Nano"], platform: uniq(d.influencers,i=>i.platform)};
+    return {};
+  });
+}
 function tabDims(){
-  const d = state.data;
-  const uniq = (arr,f) => [...new Set(arr.map(f))].filter(x => x != null && x !== "—").sort();
+  const v = dimValues(state.tab);
   if(state.tab === "performance") return [
-    {key:"platform", label:t("d_platform"), values:uniq(d.paid,r=>r.platform)},
-    {key:"funnel", label:t("d_funnel"), values:uniq(d.paid,r=>r.funnel)},
-    {key:"objective", label:t("d_objective"), values:uniq(d.paid,r=>r.objective)},
-    {key:"market", label:t("d_market"), values:uniq(d.paid,r=>r.market)},
-    {key:"language", label:t("d_language"), values:uniq(d.paid,r=>r.language)},
-    {key:"postType", label:t("d_postType"), values:uniq(d.paid,r=>r.postType)},
-    {key:"creativeType", label:t("d_creativeType"), values:uniq(d.paid,r=>r.creativeType)}
+    {key:"platform", label:t("d_platform"), values:v.platform},
+    {key:"funnel", label:t("d_funnel"), values:v.funnel},
+    {key:"objective", label:t("d_objective"), values:v.objective},
+    {key:"market", label:t("d_market"), values:v.market},
+    {key:"language", label:t("d_language"), values:v.language},
+    {key:"postType", label:t("d_postType"), values:v.postType},
+    {key:"creativeType", label:t("d_creativeType"), values:v.creativeType}
   ];
-  if(state.tab === "social") return [{key:"platform", label:t("platform"), values:["Instagram","TikTok","Facebook"]}];
+  if(state.tab === "social") return [{key:"platform", label:t("platform"), values:v.platform}];
   if(state.tab === "influencer") return [
-    {key:"tier", label:t("tier"), values:["Macro","Micro","Nano"]},
-    {key:"platform", label:t("platform"), values:uniq(d.influencers,i=>i.platform)}
+    {key:"tier", label:t("tier"), values:v.tier},
+    {key:"platform", label:t("platform"), values:v.platform}
   ];
   return [];
 }
@@ -1239,11 +1343,52 @@ function dimLabel(dim){
     creative:t("d_creative"), tier:t("tier"), creator:t("creator")};
   return map[dim] || dim;
 }
+/* Widgets build when they are on screen (or within a screen of it) rather than
+   all at once. Building a chart is the expensive part of a render, and most of
+   a tab sits below the fold — so a filter tick only pays for what you can see.
+   Panels hold their previous height while unbuilt, so nothing jumps. */
+let widgetIO = null, widgetPending = [];
+const widgetH = {};
+function buildWidget(p){
+  if(p.built) return;
+  p.built = true;
+  p.body.style.minHeight = "";              // drop the placeholder first, so a chart measures its real box
+  widgetKey = p.key; chartSeq = 0;          // lets mkChart find this widget's pooled chart
+  try{ p.w.render(p.body); }catch(e){ console.error("widget "+p.id, e); p.body.innerHTML = `<div class="panel-note">…</div>`; }
+  widgetKey = null;
+}
+function buildAllWidgets(){ cancelIdleBuild(); widgetPending.forEach(buildWidget); }
+/* Whatever is left after the visible pass is filled in during idle time, one
+   widget per slice. The click stays fast because only what you can see blocks
+   the frame, and a moment later the whole tab is real — so scrolling fast,
+   searching the page or grabbing a full-page screenshot never finds a gap. */
+let cancelIdleBuild = () => {};
+function scheduleIdleBuild(){
+  cancelIdleBuild();
+  const run = () => {
+    cancelIdleBuild = () => {};
+    const next = widgetPending.find(p => !p.built);
+    if(!next) return;
+    if(widgetIO) widgetIO.unobserve(next.cell);
+    buildWidget(next);
+    scheduleIdleBuild();
+  };
+  if(window.requestIdleCallback){
+    const h = requestIdleCallback(run, {timeout:1500});
+    cancelIdleBuild = () => { cancelIdleCallback(h); cancelIdleBuild = () => {}; };
+  } else {
+    const h = setTimeout(run, 200);
+    cancelIdleBuild = () => { clearTimeout(h); cancelIdleBuild = () => {}; };
+  }
+}
 function renderView(){
   const cfg = VIEWCFG[state.tab];
   const main = $("#view");
+  cancelIdleBuild();
+  if(widgetIO){ widgetIO.disconnect(); widgetIO = null; }
   main.innerHTML = `<div class="grid"></div>`;
   const grid = main.firstChild;
+  const pending = widgetPending = [];
   cfg.order.forEach(id => {
     if(cfg.hidden.includes(id)) return;
     const w = WIDGETS[state.tab].find(x=>x.id===id); if(!w) return;
@@ -1254,9 +1399,47 @@ function renderView(){
     }
     const body = document.createElement("div");
     body.style.cssText = "display:flex;flex-direction:column;flex:1;min-width:0";
+    const key = state.tab + "/" + id;
+    // Only a remembered height reserves space. The first time a tab is drawn the
+    // cells collapse, everything reads as on-screen and builds eagerly — so the
+    // first paint is never deferred and never shows a gap. Deferring starts on
+    // the second render, which is the path that actually needs to be fast.
+    if(widgetH[key]) body.style.minHeight = widgetH[key] + "px";
     cell.appendChild(body); grid.appendChild(cell);
-    try{ w.render(body); }catch(e){ console.error("widget "+id, e); body.innerHTML = `<div class="panel-note">…</div>`; }
+    pending.push({w, id, key, cell, body, built:false});
   });
+  // Measure every cell first, then build — reading and writing in one loop would
+  // force a layout per widget. One rect for the grid plus cheap offsets off it
+  // costs a single layout for the whole pass.
+  const vh = window.innerHeight, margin = 300;
+  const gridTop = grid.getBoundingClientRect().top, gridOff = grid.offsetTop;
+  const rects = pending.map(p => {
+    const top = gridTop + (p.cell.offsetTop - gridOff);
+    return {top, bottom: top + p.cell.offsetHeight};
+  });
+  const later = [];
+  pending.forEach((p, i) => {
+    const r = rects[i];
+    if(r.top < vh + margin && r.bottom > -margin) buildWidget(p); else later.push(p);
+  });
+  if(later.length && "IntersectionObserver" in window){
+    const io = widgetIO = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if(!e.isIntersecting) return;
+        io.unobserve(e.target);
+        const p = later.find(x => x.cell === e.target);
+        if(p) buildWidget(p);
+      });
+    }, {rootMargin: margin + "px 0px"});
+    later.forEach(p => io.observe(p.cell));
+    scheduleIdleBuild();          // and fill in the rest once the browser is free
+  } else {
+    later.forEach(buildWidget);   // no observer support: keep the old behaviour
+  }
+  // Remember real heights so the next render reserves the right space.
+  requestAnimationFrame(() => pending.forEach(p => {
+    if(p.built && p.body.isConnected) widgetH[p.key] = Math.round(p.body.getBoundingClientRect().height);
+  }));
 }
 
 /* ================= admin editor ================= */
@@ -1341,7 +1524,12 @@ function applyStatic(){
   const rp = $("#rolePill");
   if(!$("#app").hidden){ rp.textContent = state.role === "admin" ? t("admin") : t("client"); }
 }
-function toggleLang(){ LANG = LANG === "en" ? "ar" : "en"; localStorage.setItem(LANG_KEY, LANG); applyStatic(); if(!$("#app").hidden) render(); }
+function toggleLang(){
+  LANG = LANG === "en" ? "ar" : "en"; localStorage.setItem(LANG_KEY, LANG);
+  clearChartPool();   // the chart font changes with the language; measure it fresh
+  applyStatic();
+  if(!$("#app").hidden) render();
+}
 function toggleLangGate(){ toggleLang(); }
 
 /* ================= init ================= */
@@ -1350,6 +1538,7 @@ document.addEventListener("click", e => {
   $$("details.fdrop[open]").forEach(d => { if(!d.contains(e.target)) { d.removeAttribute("open"); if(lastOpenDrop === d.dataset.k) lastOpenDrop = null; } });
 });
 $("#passcode") && ($("#passcode").onkeydown = e => { if(e.key === "Enter") attemptLogin(); });
+window.addEventListener("beforeprint", buildAllWidgets);   // a print needs the whole tab, not just what's on screen
 loadData().then(() => {
   VIEWCFG = loadView();
   applyStatic();
