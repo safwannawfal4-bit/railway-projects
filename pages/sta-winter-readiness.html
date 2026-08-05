@@ -387,6 +387,8 @@ html[dir="rtl"] .note{padding:12px 16px 12px 0; background:linear-gradient(-90de
 .note b{color:var(--ink); font-weight:600}
 .note.rust{border-inline-start-color:var(--rust); background:linear-gradient(90deg,color-mix(in srgb,var(--rust) 8%,transparent),transparent 72%)}
 html[dir="rtl"] .note.rust{background:linear-gradient(-90deg,color-mix(in srgb,var(--rust) 8%,transparent),transparent 72%)}
+#demo-note{margin:22px 0 -6px}
+@media print{ #demo-note{margin:12px 0} }
 
 /* deck-style stat strip */
 .strip{display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -539,6 +541,8 @@ footer.foot{margin-top:56px; padding:30px 0 46px; border-top:1px solid var(--lin
   </div>
   <div class="chips" id="chips"></div>
 </div></div>
+
+<div class="wrap"><div class="note rust" id="demo-note"></div></div>
 
 <main class="wrap" id="main"></main>
 
@@ -721,6 +725,7 @@ en:{
  "n.shape":"The shortlist is also the wrong shape. The plan is a barbell — 8 hero, 22 mid, 30 micro — because micro creators deliver materially higher engagement at better cost per engagement. As sourced it runs hero-heavy, which is why it prices above the working budget.",
  "n.scope":"{n} sourced names sit outside the briefed markets — Latin America, Uzbekistan and Tajikistan. The plan flags Brazil and Mexico as an upside conversation and requires eVisa verification for Uzbekistan before funding. They are excluded from the recommended roster and shown only under All sourced.",
  "n.arabic":"Arabic translation is machine-generated and should be reviewed by a native speaker before client delivery.",
+ "n.demo":"<b>Demo dashboard.</b> This is a demonstration build. Some figures are real sourced data and some are demo data used for visualisation, so that the full view and the depth of our analytical capability can be seen end to end. Do not treat any number here as a final, contracted or verified figure.",
 
  "foot":"Saudi Tourism Authority × ITP Live · via Starcom, Publicis Groupe · Planning view, {d}",
  "ax.followers":"AUDIENCE SIZE","ax.er":"ENGAGEMENT RATE",
@@ -874,6 +879,7 @@ ar:{
  "n.shape":"القائمة المختصرة بالشكل الخطأ أيضاً. الخطة حديد — 8 رئيسية و22 وسطى و30 صغيرة — لأن الفئة الصغيرة تحقّق تفاعلاً أعلى بكثير بتكلفة أفضل للتفاعل الواحد. وكما تم مصدرتها تميل بشدّة للفئة الرئيسية، ولهذا تُسعَّر فوق الميزانية.",
  "n.scope":"{n} اسماً من المصادر تقع خارج الأسواق المطلوبة — أمريكا اللاتينية وأوزبكستان وطاجيكستان. تُدرج الخطة البرازيل والمكسيك كحوار توسّع، وتشترط التحقّق من التأشيرة الإلكترونية لأوزبكستان قبل التمويل. وهي مستبعدة من القائمة المرشّحة وتظهر فقط ضمن كل المصادر.",
  "n.arabic":"الترجمة العربية آلية وتحتاج مراجعة متحدّث أصلي قبل التسليم للعميل.",
+ "n.demo":"<b>لوحة عرض توضيحية.</b> هذه نسخة تجريبية. بعض الأرقام بيانات حقيقية مصدرة وبعضها بيانات توضيحية مستخدمة للعرض البصري، لإظهار الصورة الكاملة وعمق قدراتنا التحليلية من البداية إلى النهاية. لا تعتبر أي رقم هنا نهائياً أو متعاقداً عليه أو مؤكداً.",
 
  "foot":"الهيئة السعودية للسياحة × ITP Live · عبر ستاركوم، مجموعة بابليسيس · عرض التخطيط، {d}",
  "ax.followers":"حجم الجمهور","ax.er":"معدل التفاعل",
@@ -1030,6 +1036,8 @@ function buildShell(){
   q.oninput=()=>{ S.f.q=q.value; S.page=1; render(); };
   $("#f-clear").textContent=t("f.clear");
   $("#f-clear").onclick=()=>{ S.f={region:"",market:"",platform:"",tier:"",arch:"",floor:"",q:""}; S.page=1; buildShell(); render(); };
+
+  $("#demo-note").innerHTML = t("n.demo");
 
   $("#foot-txt").textContent = fill(t("foot"), {d:new Date().toLocaleDateString(S.lang==="ar"?"ar-EG":"en-GB",{day:"numeric",month:"long",year:"numeric"})});
 }
@@ -1529,7 +1537,6 @@ const COLS = [
   {k:"cpe",      l:"l.cpe",      n:true, mod:true},
   {k:"fee",      l:"l.fee",      n:true, mod:true, int:true},
   {k:"rate_source",l:"l.rate",   n:false, int:true},
-  {k:"talent_team",l:"l.team",   n:false, int:true},
   {k:"gates_passed",l:"l.gates", n:true},
   {k:"flags",    l:"l.flags",    n:false, int:true}
 ];
@@ -1726,7 +1733,7 @@ function render(){
 function wire(){
   $$("#main th[data-sort]").forEach(th=> th.onclick=()=>{
     const k=th.dataset.sort;
-    if(S.sort.k===k) S.sort.dir*=-1; else { S.sort.k=k; S.sort.dir = ["name","market","platform","tier","archetype","rate_source","talent_team"].includes(k)?1:-1; }
+    if(S.sort.k===k) S.sort.dir*=-1; else { S.sort.k=k; S.sort.dir = ["name","market","platform","tier","archetype","rate_source"].includes(k)?1:-1; }
     render();
   });
   const p=$("#pg-prev"), nx=$("#pg-next");
