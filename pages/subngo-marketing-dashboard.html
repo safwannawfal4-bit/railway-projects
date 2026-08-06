@@ -473,10 +473,16 @@ const fmtPct = (n,d=1) => (n*100).toFixed(d)+"%";
 const fmtX = n => n.toFixed(1)+"x";
 const fmtTime = s => Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0");
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const dLabel = iso => { const d = new Date(iso+"T00:00:00"); return MONTHS[d.getMonth()]+" "+d.getDate(); };
-const addDays = (iso,n) => { const d = new Date(iso+"T00:00:00"); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
-const diffDays = (a,b) => Math.round((new Date(b+"T00:00:00") - new Date(a+"T00:00:00"))/86400000);
-const weekKey = iso => { const d = new Date(iso+"T00:00:00"); const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day); return d.toISOString().slice(0,10); };
+/* Dates are plain YYYY-MM-DD strings, so every helper works in UTC end to end.
+   Parsing as local time and formatting back with toISOString() loses a day at
+   any positive UTC offset — Beirut, Dubai, Riyadh — which made addDays() return
+   the day it was given and hung the day-by-day loops that build the daily
+   charts. Parse with "T00:00:00Z" and use only the UTC getters and setters. */
+const parseISO = iso => new Date(iso + "T00:00:00Z");
+const dLabel = iso => { const d = parseISO(iso); return MONTHS[d.getUTCMonth()]+" "+d.getUTCDate(); };
+const addDays = (iso,n) => { const d = parseISO(iso); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+const diffDays = (a,b) => Math.round((parseISO(b) - parseISO(a))/86400000);
+const weekKey = iso => { const d = parseISO(iso); const day = (d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-day); return d.toISOString().slice(0,10); };
 const sum = (arr,f) => arr.reduce((a,r)=>a+(f(r)||0),0);
 function delta(cur, prev){ if(prev == null || !isFinite(prev) || prev === 0) return null; return (cur - prev)/prev; }
 function deltaChip(d, invert=false){
@@ -503,6 +509,20 @@ function prevBounds(from, to){
   return [pFrom, pTo];
 }
 const inRange = (iso, from, to) => iso >= from && iso <= to;
+/* Every day from `from` to `to`. Bails out if a date ever fails to advance
+   rather than spinning: a wedged loop here freezes the whole page with nothing
+   in the console to explain it. */
+function dayRange(from, to){
+  const keys = [];
+  let d = from;
+  while(d <= to){
+    keys.push(d);
+    const next = addDays(d, 1);
+    if(next <= d || keys.length > 3700){ console.error("dayRange stopped early", from, to, d); break; }
+    d = next;
+  }
+  return keys;
+}
 
 /* ---------------- filter engine ---------------- */
 function toggleFilter(tab, dim, val){
@@ -1075,7 +1095,7 @@ influencer: [
       const [f,to] = rangeBounds();
       const rows = infDailyRows(f,to);
       const days = {}; rows.forEach(r => days[r.date] = (days[r.date]||0) + r.r);
-      const keys = []; for(let d=f; d<=to; d=addDays(d,1)) keys.push(d);
+      const keys = dayRange(f, to);
       el.innerHTML = `<div class="chart-wrap"><canvas></canvas></div>`;
       const type = viewChart("influencer","iRedTrend","line");
       const C = CH().inf;
@@ -1180,7 +1200,7 @@ function kpiRow(el, items){
 function dailyMetricChart(el, tab, id, get, fmt, color, defType){
   const [f,to] = rangeBounds(); const rows = paidRows(f,to);
   const days = {}; rows.forEach(r => days[r.date] = (days[r.date]||0) + get(r));
-  const keys = []; for(let d=f; d<=to; d=addDays(d,1)) keys.push(d);
+  const keys = dayRange(f, to);
   el.innerHTML = `<div class="chart-wrap"><canvas></canvas></div>`;
   const type = viewChart(tab, id, defType);
   mkChart(el.querySelector("canvas"), { type,
