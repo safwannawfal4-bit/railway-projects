@@ -20,6 +20,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | [`uae-swat-challenge.html`](pages/uae-swat-challenge.html)                       | [/uae-swat-challenge](https://railway-projects-production-0ea1.up.railway.app/uae-swat-challenge)                       | Gated campaign performance dashboard for the UAE SWAT Challenge |
 | [`sta-winter-readiness.html`](pages/sta-winter-readiness.html)                   | [/sta-winter-readiness](https://railway-projects-production-0ea1.up.railway.app/sta-winter-readiness)                   | Gated influencer roster dashboard for STA's The Second Winter |
 | [`subngo-marketing-dashboard.html`](pages/subngo-marketing-dashboard.html)       | [/subngo-marketing-dashboard](https://railway-projects-production-0ea1.up.railway.app/subngo-marketing-dashboard)       | Gated full-funnel marketing dashboard for Sub N' Go |
+| [`jays-sports-diner-dashboard.html`](pages/jays-sports-diner-dashboard.html)     | [/jays-sports-diner-dashboard](https://railway-projects-production-0ea1.up.railway.app/jays-sports-diner-dashboard)     | Gated marketing scoreboard for Jay's Sports Diner |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.
