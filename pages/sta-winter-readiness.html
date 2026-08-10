@@ -639,7 +639,7 @@ en:{
  "c.delivery.s":"The brief states an average of 7 million impressions per market cluster. The plan models three clusters and beats it on both CPM assumptions.",
  "c.delivery.brief":"Briefed KPI","c.delivery.cons":"Plan, conservative","c.delivery.tgt":"Plan, target",
  "c.delivery.roster":"This roster · gross views","c.delivery.rosterimp":"This roster · est. impressions",
- "c.delivery.n":"<b>The bottom two bars are the roster as actually briefed.</b> The sourcing schedule contracts one view-generating asset per creator — an IG reel, a TikTok video or a YouTube integration — so these are per-creator estimates summed, not a per-creator average multiplied by the plan's asset count. On that basis the shortlist lands at <b>85% of the briefed KPI</b>, short by roughly 3.2M impressions. Closing the gap means more assets per creator, more creators, or both — the first three bars price <i>unique reach</i> and are not like-for-like with gross views.",
+ "c.delivery.n":"<b>The bottom two bars are the roster as actually briefed.</b> The sourcing schedule contracts one view-generating asset per creator — an IG reel, a TikTok video or a YouTube integration — so these are per-creator estimates summed, not a per-creator average multiplied by the plan's asset count. On that basis the current selection lands at <b>{p}% of the briefed KPI</b>, {gap}. The first three bars price <i>unique reach</i> and are not like-for-like with gross views.","c.delivery.under":"short by roughly {g} impressions — closing the gap means more assets per creator, more creators, or both","c.delivery.over":"ahead by roughly {g} impressions, before any de-duplication or frequency cap",
 
 "c.delivery.unique":"Priced as unique reach",
  "c.delivery.gross":"Modelled from this roster — contracted deliverables",
@@ -799,7 +799,7 @@ ar:{
  "c.delivery.s":"يحدّد الموجز متوسط 7 ملايين ظهور لكل تجمّع سوقي. تنمذج الخطة ثلاثة تجمّعات وتتجاوزه على كلا افتراضَي التكلفة.",
  "c.delivery.brief":"مؤشر الموجز","c.delivery.cons":"الخطة، متحفّظ","c.delivery.tgt":"الخطة، مستهدف",
  "c.delivery.roster":"هذه القائمة · مشاهدات إجمالية","c.delivery.rosterimp":"هذه القائمة · الظهور المقدّر",
- "c.delivery.n":"<b>العمودان السفليان يمثّلان القائمة كما وردت في الموجز.</b> يتعاقد جدول المصادر على مادة واحدة مولّدة للمشاهدات لكل صانع محتوى — ريل على إنستغرام أو فيديو تيك توك أو دمج على يوتيوب — لذا فهذه تقديرات مجمّعة لكل صانع محتوى، وليست متوسطاً مضروباً في عدد مواد الخطة. وعلى هذا الأساس تبلغ القائمة المختصرة <b>٨٥٪ من مؤشر الموجز</b>، بنقص يقارب ٣٫٢ مليون ظهور. وسدّ الفجوة يتطلّب مواد أكثر لكل صانع محتوى أو عدداً أكبر من صنّاع المحتوى أو كليهما — أما الأعمدة الثلاثة الأولى فتسعّر <i>الوصول الفريد</i> وليست مكافئة للمشاهدات الإجمالية.",
+ "c.delivery.n":"<b>العمودان السفليان يمثّلان القائمة كما وردت في الموجز.</b> يتعاقد جدول المصادر على مادة واحدة مولّدة للمشاهدات لكل صانع محتوى — ريل على إنستغرام أو فيديو تيك توك أو دمج على يوتيوب — لذا فهذه تقديرات مجمّعة لكل صانع محتوى، وليست متوسطاً مضروباً في عدد مواد الخطة. وعلى هذا الأساس يبلغ الاختيار الحالي <b>{p}٪ من مؤشر الموجز</b>، {gap}. أما الأعمدة الثلاثة الأولى فتسعّر <i>الوصول الفريد</i> وليست مكافئة للمشاهدات الإجمالية.","c.delivery.under":"بنقص يقارب {g} ظهور — وسدّ الفجوة يتطلّب مواد أكثر لكل صانع محتوى أو عدداً أكبر من صنّاع المحتوى أو كليهما","c.delivery.over":"بزيادة تقارب {g} ظهور، قبل أي إزالة تكرار أو سقف تكرار",
 
 "c.delivery.unique":"مُسعّر كوصول فريد",
  "c.delivery.gross":"محسوب من هذه القائمة — التسليمات المتعاقد عليها",
@@ -896,7 +896,7 @@ const S = {
   theme: localStorage.getItem(CONFIG.store+"_theme") || "dark",
   role: null,
   sec: "overview",
-  scope: "rec",
+  scope: "all",
   f: { region:"", market:"", platform:"", tier:"", arch:"", floor:"" , q:"" },
   sort: { k:"score", dir:-1 },
   page: 1, per: 25
@@ -1267,7 +1267,11 @@ function secOverview(rows){
          tip:t("l.projimp")+":"+n0(a.ti)+"|"+t("l.assets")+":"+n0(a.assets)},
         {label:t("c.delivery.roster"), sub:nCre(a.n), v:a.tv, vt:nk(a.tv,1), color:"var(--ord2)",
          tip:t("l.projviews")+":"+n0(a.tv)+"|"+t("l.assets")+":"+n0(a.assets)}], {max:dvMax, rule:M.briefed_kpi})}
-      <div class="note">${t("c.delivery.n")}</div>
+      <div class="note">${fill(t("c.delivery.n"), {
+        p: Math.round(((a.ti||0)/M.briefed_kpi)*100),
+        gap: fill(t((a.ti||0) >= M.briefed_kpi ? "c.delivery.over" : "c.delivery.under"),
+                  {g: nk(Math.abs((a.ti||0)-M.briefed_kpi),1)})
+      })}</div>
     </div>
     <div class="card">
       <h3>${esc(t("c.tiers"))}</h3><p class="sub">${esc(t("c.tiers.s"))}</p>
