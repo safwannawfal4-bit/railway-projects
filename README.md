@@ -21,6 +21,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | [`sta-winter-readiness.html`](pages/sta-winter-readiness.html)                   | [/sta-winter-readiness](https://railway-projects-production-0ea1.up.railway.app/sta-winter-readiness)                   | Gated influencer roster dashboard for STA's The Second Winter |
 | [`subngo-marketing-dashboard.html`](pages/subngo-marketing-dashboard.html)       | [/subngo-marketing-dashboard](https://railway-projects-production-0ea1.up.railway.app/subngo-marketing-dashboard)       | Gated full-funnel marketing dashboard for Sub N' Go |
 | [`jays-sports-diner-dashboard.html`](pages/jays-sports-diner-dashboard.html)     | [/jays-sports-diner-dashboard](https://railway-projects-production-0ea1.up.railway.app/jays-sports-diner-dashboard)     | Gated marketing scoreboard for Jay's Sports Diner |
+| [`itp-sports-dashboard.html`](pages/itp-sports-dashboard.html)                   | [/itp-sports-dashboard](https://railway-projects-production-0ea1.up.railway.app/itp-sports-dashboard)                   | Gated paid media dashboard for ITP Sports (Spartan, Tough Mudder, DEKA) |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.
