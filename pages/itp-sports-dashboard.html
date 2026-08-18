@@ -95,12 +95,17 @@ button{cursor:pointer;background:none;border:none}
 #login{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:var(--bg);padding:24px}
 #login::before{content:"";position:absolute;inset:0;background:radial-gradient(700px 420px at 50% 10%,rgba(216,31,42,.16),transparent 65%)}
 .lg-card{position:relative;width:min(410px,100%);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 32px 30px;box-shadow:var(--shadow);text-align:center}
-.lg-marks{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px}
-.lg-marks .sq{width:40px;height:40px;border-radius:9px;overflow:hidden;background:#000;border:1px solid var(--border);flex:none}
-.lg-marks .sq img{width:100%;height:100%;object-fit:cover;display:block}
+.lg-hero{display:grid;place-items:center;margin-bottom:20px}
+.lg-hero img{width:78px;height:78px;border-radius:16px;object-fit:cover;background:#000;border:1px solid var(--border-2);box-shadow:0 10px 34px rgba(0,0,0,.5)}
+.lg-rule{height:1px;margin:24px 0 20px;background:linear-gradient(90deg,transparent,var(--lux),transparent);opacity:.85}
+.lg-marks{display:flex;align-items:flex-start;justify-content:center;gap:22px}
+.lg-marks .mk{display:flex;flex-direction:column;align-items:center;gap:7px;width:74px}
+.lg-marks .mk img{height:38px;width:38px;border-radius:9px;object-fit:cover;background:#000;border:1px solid var(--border)}
+.lg-marks .mk img.inv{object-fit:contain;background:transparent;border:0;filter:invert(var(--logo-invert))}
+.lg-marks .mk span{font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--text-faint);font-weight:700;text-align:center;line-height:1.3}
 .lg-title{font-family:var(--fd);font-size:27px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.05}
 .lg-sub{color:var(--text-dim);font-size:12.5px;margin-top:7px;letter-spacing:.02em}
-.lg-form{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+.lg-form{margin-top:26px;display:flex;flex-direction:column;gap:10px}
 .lg-form input{width:100%;padding:13px 15px;border-radius:11px;border:1px solid var(--border-2);background:var(--surface-2);outline:none;text-align:center;letter-spacing:.09em;font-weight:600;transition:border-color .18s}
 .lg-form input:focus{border-color:var(--brand)}
 .lg-form button{padding:13px;border-radius:11px;background:var(--text);color:var(--bg);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:12.5px;transition:opacity .18s}
@@ -317,6 +322,89 @@ footer.ft{max-width:var(--maxw);margin:0 auto;width:100%;padding:20px;border-top
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface-3);border:1px solid var(--border-2);color:var(--text);padding:10px 18px;border-radius:11px;font-size:12.5px;box-shadow:var(--shadow);z-index:300;opacity:0;transition:.28s var(--ease);pointer-events:none}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ============ EXECUTIVE / LUXURY LAYER ============ */
+:root{ --lux:#c6ae7b; --lux-2:#8d7b55; }
+:root[data-theme="light"]{ --lux:#8a743f; --lux-2:#b39d6d; }
+body[data-tab="exec"]{ --bg:#07080a; }
+:root[data-theme="light"] body[data-tab="exec"]{ --bg:#f2f3f5; }
+
+.band{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--border);
+  background:linear-gradient(122deg,#101317 0%,#0b0d10 46%,#0e1114 100%);
+  padding:30px 34px 28px;margin-bottom:8px;display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+:root[data-theme="light"] .band{background:linear-gradient(122deg,#ffffff 0%,#f8f9fb 52%,#eff1f4 100%)}
+:root[data-theme="light"] .band::before{background:radial-gradient(720px 280px at 84% -34%,rgba(198,174,123,.16),transparent 68%)}
+:root[data-theme="light"] .bcard{background:linear-gradient(152deg,color-mix(in srgb,var(--bc) 9%,var(--surface)) 0%,var(--surface) 62%)}
+:root[data-theme="light"] .bcard::after{background:radial-gradient(circle,color-mix(in srgb,var(--bc) 13%,transparent),transparent 68%)}
+.band::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(760px 300px at 82% -30%,rgba(198,174,123,.13),transparent 66%),
+             radial-gradient(520px 240px at 8% 130%,rgba(216,31,42,.10),transparent 70%);pointer-events:none}
+.band::after{content:"";position:absolute;left:34px;right:34px;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--lux),transparent);opacity:.55}
+.band .bl{height:46px;width:46px;border-radius:10px;object-fit:cover;background:#000;border:1px solid var(--border-2);flex:none;position:relative}
+.band .bt{position:relative;min-width:0;flex:1}
+.band .ovl{font-size:9.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--lux);font-weight:700;margin-bottom:7px}
+.band h1{font-family:var(--fd);font-size:clamp(28px,3.4vw,42px);font-weight:700;letter-spacing:.055em;
+  text-transform:uppercase;line-height:.98;color:var(--text)}
+.band .meta{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--text-dim);letter-spacing:.03em}
+.band .dot{display:inline-flex;align-items:center;gap:6px}
+.band .dot i{width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.55);animation:pulse 2.4s infinite;font-style:normal}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.band .bstat{position:relative;text-align:right;padding-left:26px;border-left:1px solid var(--border);min-width:190px}
+.band .bstat b{display:block;font-family:var(--fd);font-size:clamp(30px,3.2vw,40px);font-weight:700;line-height:1;color:var(--text);letter-spacing:.01em}
+.band .bstat span{display:block;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--lux);margin-top:8px;font-weight:700}
+.band .bmarks{display:flex;gap:7px;justify-content:flex-end;margin-top:12px}
+.band .bmarks img{height:22px;width:22px;border-radius:6px;object-fit:cover;background:#000;border:1px solid var(--border);opacity:.85}
+.band .bmarks img.mk{object-fit:contain;background:transparent;border:0;filter:invert(var(--logo-invert))}
+
+/* headline KPI — luxury */
+.kgrid.lux{grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:16px;margin-top:14px}
+.kgrid.lux .kpi{padding:28px 28px 26px;border-radius:18px;
+  background:linear-gradient(180deg,var(--surface) 0%,color-mix(in srgb,var(--bg) 55%,var(--surface)) 100%)}
+.kgrid.lux .kpi::before{left:0;right:0;top:0;bottom:auto;width:auto;height:2px;
+  background:linear-gradient(90deg,var(--lux),color-mix(in srgb,var(--lux) 12%,transparent) 72%);opacity:1}
+.kgrid.lux .kpi:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--lux) 42%,transparent)}
+.kgrid.lux .kl{font-size:9.5px;letter-spacing:.26em;color:var(--lux);font-weight:700}
+.kgrid.lux .kv{font-family:var(--fd);font-size:clamp(40px,4.6vw,58px);color:var(--text);margin-top:14px;letter-spacing:.005em}
+.kgrid.lux .kv[data-len="m"]{font-size:clamp(34px,3.8vw,47px)}
+.kgrid.lux .kv[data-len="l"]{font-size:clamp(27px,3vw,38px)}
+.kgrid.lux .kd{margin-top:11px;font-size:12.5px;line-height:1.5;color:var(--text-dim)}
+.kgrid.lux .kd b{color:var(--text);font-weight:600}
+
+/* brand scoreboard */
+.bcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:14px}
+.bcard{position:relative;overflow:hidden;text-align:left;padding:20px 21px 19px;border-radius:17px;
+  border:1px solid var(--border);cursor:pointer;transition:.2s var(--ease);
+  background:linear-gradient(152deg,color-mix(in srgb,var(--bc) 15%,var(--surface)) 0%,var(--surface) 58%)}
+.bcard::after{content:"";position:absolute;right:-56px;top:-76px;width:210px;height:210px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--bc) 26%,transparent),transparent 68%);pointer-events:none}
+.bcard:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--bc) 55%,transparent)}
+.bcard.on{border-color:var(--bc);box-shadow:0 0 0 1px var(--bc),0 16px 44px color-mix(in srgb,var(--bc) 22%,transparent)}
+.bcard .bh{display:flex;align-items:center;gap:11px;position:relative;min-height:34px}
+.bcard .bh img{height:30px;width:auto;max-width:132px;object-fit:contain}
+.bcard .bh img.sq{height:30px;width:30px;border-radius:8px;object-fit:cover;background:#000}
+.bcard .bh img.mk{object-fit:contain;background:transparent;filter:invert(var(--logo-invert));height:32px;width:auto;max-width:150px}
+.bcard .bh .nm{font-family:var(--fd);font-size:16px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text)}
+.bcard .bh .tick{margin-left:auto;font-size:11px;color:var(--bc);opacity:0;transition:.18s}
+.bcard.on .bh .tick{opacity:1}
+.bcard .bmain{position:relative;margin-top:16px}
+.bcard .bmain .l{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-faint);font-weight:700}
+.bcard .bmain .v{font-family:var(--fd);font-size:32px;font-weight:700;line-height:1.02;margin-top:5px;color:var(--text)}
+.bcard .brow{position:relative;display:flex;gap:16px;margin-top:15px;padding-top:13px;border-top:1px solid var(--border)}
+.bcard .brow div{min-width:0}
+.bcard .brow .l{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-faint);font-weight:700}
+.bcard .brow .v{font-family:var(--fd);font-size:19px;font-weight:700;margin-top:3px;color:var(--bc)}
+.bcard .bar{position:relative;margin-top:15px}
+.bcard .bar .t{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-dim);margin-bottom:6px;letter-spacing:.03em}
+.bcard .bar .t b{color:var(--text);font-weight:600}
+.bcard .bar .track{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden}
+.bcard .bar .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--bc),color-mix(in srgb,var(--bc) 55%,transparent));transition:width .5s var(--ease)}
+@media(max-width:700px){
+  .band{padding:22px 20px;gap:16px}
+  .band .bstat{padding-left:0;border-left:0;border-top:1px solid var(--border);padding-top:14px;text-align:left;width:100%}
+  .band .bmarks{justify-content:flex-start}
+  .kgrid.lux .kv{font-size:38px}
+}
+
 @media(max-width:980px){
   .cell[data-w="third"],.cell[data-w="twothird"]{grid-column:span 3}
   .stickybar{top:82px}
@@ -332,6 +420,11 @@ footer.ft{max-width:var(--maxw);margin:0 auto;width:100%;padding:20px;border-top
   .kgrid.big .kpi .kv{font-size:36px}
   .kpi .kv{font-size:27px}
   .hlp .tip{width:min(280px,74vw)}
+  #periodPill{display:none}
+  .top-in{gap:7px}
+  .pill{padding:6px 9px;font-size:11px}
+  .cur-tog button{padding:6px 9px;font-size:11px}
+  .bcard .bmain .v{font-size:29px}
 }
 </style>
 </head>
@@ -340,14 +433,15 @@ footer.ft{max-width:var(--maxw);margin:0 auto;width:100%;padding:20px;border-top
 <!-- ================= LOGIN ================= -->
 <div id="login">
   <div class="lg-card">
-    <div class="lg-marks">
-      <div class="sq"><img id="lgITP" alt="ITP Media Group"></div>
-      <div class="sq" style="background:#0f1114;display:grid;place-items:center"><img id="lgSP" alt="Spartan" style="width:80%;height:80%;object-fit:contain;filter:invert(var(--logo-invert))"></div>
-      <div class="sq"><img id="lgTM" alt="Tough Mudder"></div>
-      <div class="sq"><img id="lgDK" alt="DEKA"></div>
-    </div>
+    <div class="lg-hero"><img id="lgITP" alt="ITP Media Group"></div>
     <div class="lg-title">ITP Sports</div>
-    <div class="lg-sub">Paid Media Performance · Spartan · Tough Mudder · DEKA</div>
+    <div class="lg-sub">Paid Media Performance</div>
+    <div class="lg-rule"></div>
+    <div class="lg-marks">
+      <div class="mk"><img id="lgSP" class="inv" alt="Spartan"><span>Spartan</span></div>
+      <div class="mk"><img id="lgTM" alt="Tough Mudder"><span>Tough Mudder</span></div>
+      <div class="mk"><img id="lgDK" alt="DEKA"><span>DEKA</span></div>
+    </div>
     <form class="lg-form" onsubmit="event.preventDefault();attemptLogin()">
       <input id="passcode" type="password" placeholder="Access code" autocomplete="off" spellcheck="false">
       <button type="submit">Enter Dashboard</button>
@@ -421,7 +515,7 @@ const CONFIG = {
   /* ---- BRANDS (matched against the Brand column, case-insensitive) ---- */
   brands: [
     { key:"spartan", label:"Spartan",       match:["spartan"],                     skin:"spartan", logo:"spartan", sq:false, inv:true, mark:"spartanMark", markSq:true },
-    { key:"tm",      label:"Tough Mudder",  match:["tough mudder","toughmudder","tm"], skin:"tm",   logo:"tm",      sq:true,  mark:"tm",      markSq:true },
+    { key:"tm",      label:"Tough Mudder",  match:["tough mudder","toughmudder","tough-mudder"], skin:"tm",   logo:"tm",      sq:true,  mark:"tm",      markSq:true },
     { key:"deka",    label:"DEKA",          match:["deka"],                        skin:"deka",   logo:"deka",    sq:true,  mark:"deka",    markSq:true }
   ]
 };
@@ -430,7 +524,7 @@ const LOGOS = {"spartan": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAmwAAAC
 
 const SLUG='itpsports';
 const K={sess:SLUG+'_sess',role:SLUG+'_role',theme:SLUG+'_theme',cur:SLUG+'_cur',
-         cache:SLUG+'_cache',cfg:SLUG+'_viewcfg',map:SLUG+'_colmap',src:SLUG+'_src'};
+         cache:SLUG+'_cache',cfg:SLUG+'_viewcfg',map:SLUG+'_colmap',src:SLUG+'_src',brands:SLUG+'_brands'};
 
 /* ======================= DIMENSIONS ======================= */
 /* Only these are ever offered as filters / breakdowns. Everything else is a measure. */
@@ -728,17 +822,69 @@ function prepare(){
     r.__m=m;
   });
 
-  /* brand key per row (for locked brand tabs + palette) */
-  const bc=state.colMap.brand;
-  state.rows.forEach(r=>{
-    const v=norm(bc?r[bc]:'');
-    const hit=CONFIG.brands.find(b=>b.match.some(mm=>v.includes(mm)));
-    r.__b = hit?hit.key:'';
-  });
+  state.brandRules=loadBrandRules();
+  resolveBrands();
+  /* No Brand column in the sheet? Synthesise one from the detected brand so the
+     exec chart, the Brand filter and the brand tabs all keep working. */
+  state.brandSynthetic=false;
+  if(!state.colMap.brand && state.rows.some(r=>r.__b)){
+    const lbl={}; CONFIG.brands.forEach(b=>lbl[b.key]=b.label);
+    state.rows.forEach(r=>{ r.__brand = r.__b?lbl[r.__b]:'Other'; });
+    state.colMap.brand='__brand'; state.brandSynthetic=true;
+    state.present.add('brand');
+    state.dims=DIMENSIONS.filter(d=>state.colMap[d.key]);
+  }
 
   buildSearchIndex();
   const ds=state.rows.map(r=>r.__d).filter(Boolean).sort((a,b)=>a-b);
   state.minDate=ds[0]||null; state.maxDate=ds[ds.length-1]||null;
+}
+/* ---------- brand detection ----------
+   A brand is matched against the Brand column when it exists; when it doesn't
+   (or nothing matches) we scan the other text dimensions, because campaign and
+   ad-set names almost always carry the brand. Fully overridable in Admin → Brands. */
+const BRAND_SCAN=['brand','campaign_name','adset','creative_name','market','objective'];
+function loadBrandRules(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(K.brands)||'null');}catch(e){}
+  if(!saved && CONFIG.baked && CONFIG.baked.brands) saved=CONFIG.baked.brands;
+  const out={};
+  CONFIG.brands.forEach(b=>{
+    const s=saved&&saved[b.key];
+    out[b.key]={ col:(s&&s.col)||'auto',
+                 match:(s&&Array.isArray(s.match)&&s.match.length)?s.match.slice():b.match.slice() };
+  });
+  return out;
+}
+function saveBrandRules(){ try{localStorage.setItem(K.brands,JSON.stringify(state.brandRules));}catch(e){} }
+function resolveBrands(){
+  const rules=state.brandRules||{};
+  /* longest match strings win, so "deka" beats a generic "spartan" in "Spartan DEKA …" */
+  const tests=[];
+  CONFIG.brands.forEach(b=>{
+    const r=rules[b.key]||{col:'auto',match:b.match};
+    const cols=((r.col&&r.col!=='auto')?[r.col]:BRAND_SCAN).map(c=>state.colMap[c]).filter(Boolean);
+    (r.match||[]).map(norm).filter(Boolean).forEach(m=>tests.push({key:b.key,m,cols,len:m.length}));
+  });
+  tests.sort((a,b)=>b.len-a.len);
+  state.rows.forEach(r=>{
+    r.__b='';
+    for(let i=0;i<tests.length;i++){
+      const t=tests[i];
+      for(let j=0;j<t.cols.length;j++){
+        const v=r[t.cols[j]];
+        if(v && norm(v).includes(t.m)){ r.__b=t.key; break; }
+      }
+      if(r.__b)break;
+    }
+  });
+}
+function brandRows(key){ return state.rows.filter(r=>r.__b===key); }
+function brandSourceLabel(key){
+  const r=(state.brandRules||{})[key]||{};
+  if(r.col&&r.col!=='auto') return (DIMENSIONS.find(d=>d.key===r.col)||{}).label||r.col;
+  const hit=BRAND_SCAN.find(c=>state.colMap[c]&&state.rows.some(x=>x.__b===key&&norm(x[state.colMap[c]]).match(new RegExp((r.match||[]).map(m=>norm(m).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')||'$^'))));
+  return hit?((DIMENSIONS.find(d=>d.key===hit)||{}).label||hit):'—';
 }
 function metricAvailable(key){
   const m=METRICS[key]; if(!m)return false;
@@ -795,6 +941,7 @@ function groupByDay(rows){
 const WTYPES={
   bigkpis  :{label:'Headline KPIs',      fields:['metrics']},
   kpis     :{label:'KPI Cards',          fields:['metrics']},
+  brandcards:{label:'Brand Scoreboard',  fields:['metrics']},
   line     :{label:'Trend (line)',       fields:['metrics','chart']},
   bar      :{label:'Bar + Line',         fields:['dim','metrics','limit']},
   hbar     :{label:'Horizontal Bar',     fields:['dim','metrics','limit']},
@@ -828,11 +975,13 @@ function defaultCfg(){
     tabs:{
       exec:{
         title:'Executive Summary', skin:'itp', logo:'itp', sq:true, mark:'itp', markSq:true, sub:'ITP Sports · all brands',
-        filters:[], hero:false,
+        filters:[], band:true,
         widgets:[
           W({type:'bigkpis',title:'',metrics:['purchases','roas','revenue']}),
           W({type:'bar',title:'Amount Spent by Brand',dim:'brand',metrics:['spend'],limit:12,
-             help:'Media spend split across the three ITP Sports brands. Click any bar to filter the three headline metrics above to that brand; click it again to clear.'})
+             help:'Media spend split across the three ITP Sports brands. Click any bar to filter the three headline numbers above to that brand; click it again to clear.'}),
+          W({type:'brandcards',title:'Brand Scoreboard',metrics:['revenue','roas','purchases'],
+             help:'One card per brand. The large figure is Sales, with ROAS and Purchases underneath and the brand’s share of total media investment shown as a bar. Click a card to filter the whole page to that brand.'})
         ]
       },
       analytics:{
@@ -1056,7 +1205,9 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.hlp')) $$('.hlp.on
 function visibleTabs(){
   return VIEWCFG.order.filter(k=>{
     const t=VIEWCFG.tabs[k]; if(!t)return false;
-    if(t.lockBrand) return !!state.colMap.brand && state.rows.some(r=>r.__b===t.lockBrand);
+    /* admin always sees every brand tab so an unmatched brand can be fixed;
+       the client only sees a brand tab once it actually has rows */
+    if(t.lockBrand && ROLE!=='admin') return state.rows.some(r=>r.__b===t.lockBrand);
     return true;
   });
 }
@@ -1135,6 +1286,32 @@ function chipsHTML(){
   if(h)h+=`<span class="chip clr"><button onclick="clearAll()" style="opacity:1">Clear all ×</button></span>`;
   return h;
 }
+function bandHTML(){
+  const t=tabCfg(); if(!t.band)return '';
+  const rows=applyFilters(), tt=totals(rows);
+  const stat = metricAvailable('spend') ? ['spend','Total Investment']
+             : (metricAvailable('impressions') ? ['impressions','Impressions'] : null);
+  const live = state.ts && !$('#staleBanner').classList.contains('on');
+  const marks = CONFIG.brands.map(b=>{
+    const mk=b.mark||b.logo;
+    return `<img class="${b.inv?'mk':''}" src="${LOGOS[mk]||''}" alt="${esc(b.label)}" title="${esc(b.label)}">`;
+  }).join('');
+  const nBrands=new Set(state.rows.filter(r=>r.__b).map(r=>r.__b)).size;
+  return `<div class="band">
+    <img class="bl" src="${LOGOS.itp||''}" alt="ITP Media Group">
+    <div class="bt">
+      <div class="ovl">ITP Media Group · Paid Media</div>
+      <h1>Executive Summary</h1>
+      <div class="meta">
+        <span>${esc(periodLabel(rows))}</span><span style="opacity:.35">|</span>
+        <span>${nBrands||CONFIG.brands.length} brands</span><span style="opacity:.35">|</span>
+        <span class="dot"><i></i>${live?'Live from Google Sheets':'Cached data'}</span>
+      </div>
+    </div>
+    ${stat?`<div class="bstat"><b>${fmt(stat[0],METRICS[stat[0]].num(tt))}</b><span>${stat[1]}</span>
+      <div class="bmarks">${marks}</div></div>`:''}
+  </div>`;
+}
 function heroHTML(){
   const t=tabCfg(); if(!t.lockBrand)return '';
   const rows=applyFilters(), tt=totals(rows);
@@ -1153,6 +1330,7 @@ function renderAll(){
   if(!vis.includes(state.tab)) state.tab=vis[0]||'analytics';
   const t=tabCfg(); if(!t)return;
   document.body.setAttribute('data-brandskin',t.skin||'itp');
+  document.body.setAttribute('data-tab',state.tab);
   const mk=t.mark||t.logo, cls=(t.markSq?'sq':'')+(t.inv?' inv mk':'');
   $('#hdrLogo').src=LOGOS[mk]||''; $('#hdrLogo').className='lg '+cls;
   $('#hdrTitle').textContent=CONFIG.org; $('#hdrSub').textContent=t.title;
@@ -1165,7 +1343,7 @@ function renderAll(){
   $('#ftSrc').textContent='Live source: Google Sheets · '+(srcOverride().tab||CONFIG.sheetTab)+(state.gid?' (gid '+state.gid+')':'');
 
   const widgets=(t.widgets||[]).filter(usableWidget);
-  let html=controlBar()+heroHTML()+(ROLE==='admin'?adminHTML():'');
+  let html=controlBar()+bandHTML()+heroHTML()+(ROLE==='admin'?adminHTML():'');
   if(!rows.length){
     html+=`<div class="panel"><div class="empty-st"><b>No data in view</b>Nothing matches the current filters. Remove a filter above to bring the numbers back.</div></div>`;
   }else if(!widgets.length){
@@ -1181,24 +1359,91 @@ function renderAll(){
 /* ---------- widget markup ---------- */
 function widgetHTML(w,rows){
   const t=totals(rows);
+  if(w.type==='brandcards') return brandCardsHTML(w,rows);
   if(w.type==='bigkpis'||w.type==='kpis'){
     const big=w.type==='bigkpis';
     const cards=wMetrics(w).map(k=>{
       const m=METRICS[k], v=fmt(k,m.num(t));
       const L=v.length>(big?12:11)?'l':(v.length>(big?9:8)?'m':'');
+      const note=big?plainEnglish(k,t):esc(m.formula);
       return `<div class="kpi"><div class="kl">${esc(m.label)}${helpKPI(k)}</div>
         <div class="kv"${L?` data-len="${L}"`:''}>${esc(v)}</div>
-        <div class="kd">${esc(m.formula)}</div></div>`;
+        <div class="kd">${note}</div></div>`;
     }).join('');
     return `<div class="cell" data-w="${w.w||'full'}">
       ${w.title?`<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><h3 style="font-family:var(--fd);font-size:14.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">${esc(w.title)}</h3>${helpHTML(w)}</div>`:''}
-      <div class="kgrid ${big?'big':''}">${cards}</div></div>`;
+      <div class="kgrid ${big?'big lux':''}">${cards}</div></div>`;
   }
   const body = w.type==='table' ? `<div class="tbl-wrap"><table class="dt" id="tb_${w.id}"></table></div>`
                                 : `<div class="cwrap"><canvas id="cv_${w.id}"></canvas></div>`;
   return `<div class="cell" data-w="${w.w||'full'}"><div class="panel">
       <div class="ph"><h3>${esc(w.title||WTYPES[w.type].label)}</h3>${helpHTML(w)}</div>
       <div class="pbody">${body}</div></div></div>`;
+}
+/* one plain-English line per headline number — written for a non-technical reader */
+function plainEnglish(k,t){
+  const v=METRICS[k].num(t)||0;
+  const cur=CUR==='USD'?'$1':'AED 1';
+  const back=MONEY_METRICS.has('revenue')&&CUR==='USD'?'$':'AED ';
+  const map={
+    roas    :()=>`For every <b>${cur}</b> invested in media, <b>${(v).toFixed(2)}</b> came back in sales.`,
+    revenue :()=>`Total revenue the paid campaigns generated across all brands this period.`,
+    purchases:()=>`Orders placed by people who came from a paid ad this period.`,
+    spend   :()=>`Total media investment behind the numbers on this page.`,
+    impressions:()=>`Times an ITP Sports ad appeared on someone’s screen.`,
+    reach   :()=>`Individual people reached at least once by the campaigns.`,
+    cpa     :()=>`Average media cost behind each order.`,
+    aov     :()=>`Average value of an order driven by paid media.`
+  };
+  return map[k]?map[k]():esc(METRICS[k].help);
+}
+/* ---------- brand scoreboard ---------- */
+function brandCardsHTML(w,rows){
+  const ms=wMetrics(w);
+  const hero=ms[0]||'revenue', s1=ms[1], s2=ms[2];
+  const hasSpend=metricAvailable('spend');
+  const all=applyFilters(state.rows);                 /* ignore the brand lock: exec view is cross-brand */
+  const totalSpend=hasSpend?METRICS.spend.num(totals(all)):0;
+  const cards=CONFIG.brands.map(b=>{
+    const rs=all.filter(r=>r.__b===b.key);
+    const t=totals(rs);
+    const on=state.filters.brand&&Array.from(state.filters.brand).some(v=>norm(v).includes(b.match[0]));
+    const col=(isDark()?(BRANDCOL[b.key]||{}).d:(BRANDCOL[b.key]||{}).l)||cssv('--brand');
+    const sp=hasSpend?METRICS.spend.num(t):0;
+    const share=totalSpend?sp/totalSpend*100:0;
+    const mk=b.mark||b.logo;
+    const label=rs.length?'':'<span style="font-size:10px;color:var(--text-faint);letter-spacing:.05em">no matching rows</span>';
+    return `<button class="bcard ${on?'on':''}" style="--bc:${col}" onclick="defer(()=>pickBrand('${b.key}'))">
+      <div class="bh">
+        <img class="${b.inv?'mk':(b.sq?'sq':'')}" src="${LOGOS[mk]||''}" alt="${esc(b.label)}">
+        <span class="nm">${esc(b.label)}</span><span class="tick">● Filtered</span>
+      </div>
+      <div class="bmain"><div class="l">${esc(METRICS[hero].label)}</div>
+        <div class="v">${rs.length?fmt(hero,METRICS[hero].num(t)):'—'}</div>${label}</div>
+      ${(s1||s2)?`<div class="brow">
+        ${s1?`<div><div class="l">${esc(METRICS[s1].label)}</div><div class="v">${rs.length?fmt(s1,METRICS[s1].num(t)):'—'}</div></div>`:''}
+        ${s2?`<div><div class="l">${esc(METRICS[s2].label)}</div><div class="v">${rs.length?fmt(s2,METRICS[s2].num(t)):'—'}</div></div>`:''}
+      </div>`:''}
+      ${hasSpend?`<div class="bar"><div class="t"><span>Share of investment</span><b>${share.toFixed(1)}% · ${fmt('spend',sp)}</b></div>
+        <div class="track"><div class="fill" style="width:${Math.max(share,rs.length?2:0).toFixed(1)}%"></div></div></div>`:''}
+    </button>`;
+  }).join('');
+  return `<div class="cell" data-w="${w.w||'full'}">
+    ${w.title?`<div style="display:flex;align-items:center;gap:9px;margin:6px 0 11px"><h3 style="font-family:var(--fd);font-size:14.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">${esc(w.title)}</h3>${helpHTML(w)}</div>`:''}
+    <div class="bcards">${cards}</div></div>`;
+}
+function pickBrand(key){
+  const b=CONFIG.brands.find(x=>x.key===key); if(!b)return;
+  const col=state.colMap.brand;
+  const vals=col ? Array.from(new Set(brandRows(key).map(r=>String(r[col]||'').trim()).filter(Boolean))) : [];
+  if(vals.length){
+    const cur=state.filters.brand;
+    const same=cur&&cur.size===vals.length&&vals.every(v=>cur.has(v));
+    if(same)delete state.filters.brand; else state.filters.brand=new Set(vals);
+    renderAll();
+  } else {                                   /* no Brand column → jump to the brand's own tab */
+    switchTab(key);
+  }
 }
 function helpKPI(k){
   const m=METRICS[k];
@@ -1272,7 +1517,7 @@ function dimSeries(w,rows){
 
 /* ======================= DRAW ======================= */
 function drawWidget(w,rows){
-  if(w.type==='bigkpis'||w.type==='kpis')return;
+  if(w.type==='bigkpis'||w.type==='kpis'||w.type==='brandcards')return;
   if(w.type==='table')return drawTable(w,rows);
   const cv=document.getElementById('cv_'+w.id); if(!cv)return;
   const fn={line:drawLine,bar:drawBar,hbar:drawBar,stacked:drawStacked,pie:drawPie,doughnut:drawPie,
@@ -1505,7 +1750,9 @@ function adminHTML(){
 
   const mapRow=(key,label,cur,ok)=>`<div class="map-row"><span title="${esc(label)}">${esc(label)}</span>
     <select class="${ok?'ok':''}" onchange="admMap('${key}',this.value)">
-      <option value="">— none —</option>${optList(state.headers,cur)}</select></div>`;
+      <option value="">— none —</option>
+      ${key==='brand'&&state.brandSynthetic?`<option value="__brand" selected>— auto-detected from campaign names —</option>`:''}
+      ${optList(state.headers,cur)}</select></div>`;
   let mapping=`<div class="asec"><h4>Dimensions → sheet columns</h4><div class="map-grid">
       ${DIMENSIONS.map(d=>mapRow(d.key,d.label,state.colMap[d.key],!!state.colMap[d.key])).join('')}
       ${mapRow('date','Date',state.colMap.date,!!state.colMap.date)}</div></div>
@@ -1524,13 +1771,39 @@ function adminHTML(){
       <button onclick="localStorage.removeItem(K.src);localStorage.removeItem(SLUG+'_gid');location.reload()">Reset source</button></div>
     <div class="note" style="margin-top:9px">The tab name is resolved to a <code>gid</code> automatically from the published workbook. If resolution ever fails, open sheet2 in Google Sheets, copy the number after <code>#gid=</code> in the address bar, and paste it above.</div></div>`;
 
-  const body={layout,mapping,source}[ADM.tab]||layout;
+  const inp='flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0';
+  let brands=`<div class="asec"><h4>How each brand is identified</h4>
+    <div class="note" style="margin-bottom:10px">A row belongs to a brand when the chosen column contains any of the match words below (not case sensitive). Leave the column on <b>Auto</b> and the dashboard scans Brand, then Campaign Name, Ad Set and Creative Name — so it still works when the sheet has no Brand column. Longer match words win, so <code>deka</code> beats <code>spartan</code> inside “Spartan DEKA”.</div>
+    <div class="map-grid">`;
+  CONFIG.brands.forEach(b=>{
+    const r=(state.brandRules||{})[b.key]||{col:'auto',match:b.match};
+    const n=state.rows.filter(x=>x.__b===b.key).length;
+    brands+=`<div style="border:1px solid var(--border);border-radius:10px;padding:10px;background:var(--surface-2)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <img src="${LOGOS[b.mark||b.logo]||''}" style="height:20px;width:20px;border-radius:5px;object-fit:${b.inv?'contain':'cover'};background:${b.inv?'transparent':'#000'};filter:${b.inv?'invert(var(--logo-invert))':'none'}">
+        <b style="font-size:12px;letter-spacing:.05em">${esc(b.label)}</b>
+        <span style="margin-left:auto;font-size:10.5px;color:${n?'var(--pos)':'var(--neg)'};font-weight:700">${n.toLocaleString()} rows</span></div>
+      <div class="map-row" style="margin-bottom:6px"><span>Look in</span>
+        <select onchange="admBrand('${b.key}','col',this.value)">
+          <option value="auto" ${r.col==='auto'?'selected':''}>Auto (scan all)</option>
+          ${state.dims.map(d=>`<option value="${d.key}" ${r.col===d.key?'selected':''}>${esc(d.label)}</option>`).join('')}
+        </select></div>
+      <div class="map-row"><span>Match words</span>
+        <input style="${inp}" value="${esc((r.match||[]).join(', '))}" placeholder="spartan, spartan race"
+               onchange="admBrand('${b.key}','match',this.value)"></div>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:6px">${n?'Matched via '+esc(brandSourceLabel(b.key)):'Nothing matched — widen the match words or pick the right column.'}</div>
+    </div>`;
+  });
+  brands+='</div></div>';
+
+  const body={layout,mapping,source,brands}[ADM.tab]||layout;
   return `<details class="adm" ${ADM.open?'open':''} ontoggle="ADM.open=this.open">
     <summary>⚙ Admin — Edit this dashboard<span class="tg">changes are live · Save to keep them</span></summary>
     <div class="adm-body">
       <div class="adm-tabs">
         <button class="${ADM.tab==='layout'?'on':''}" onclick="ADM.tab='layout';renderAll()">Layout &amp; Metrics</button>
         <button class="${ADM.tab==='mapping'?'on':''}" onclick="ADM.tab='mapping';renderAll()">Column Mapping</button>
+        <button class="${ADM.tab==='brands'?'on':''}" onclick="ADM.tab='brands';renderAll()">Brands</button>
         <button class="${ADM.tab==='source'?'on':''}" onclick="ADM.tab='source';renderAll()">Data Source</button>
       </div>
       ${body}
@@ -1566,6 +1839,14 @@ function admAdd(){ const type=$('#admAdd').value, t=admHost(), av=availableMetri
 function admFilterDim(k,on){ const t=admHost(); t.filters=t.filters||[];
   t.filters = on ? Array.from(new Set(t.filters.concat([k]))) : t.filters.filter(x=>x!==k);
   if(!on)delete state.filters[k]; renderAll(); }
+function admBrand(key,field,val){
+  state.brandRules=state.brandRules||loadBrandRules();
+  const r=state.brandRules[key]||(state.brandRules[key]={col:'auto',match:[]});
+  if(field==='match') r.match=String(val).split(',').map(x=>x.trim()).filter(Boolean);
+  else r[field]=val;
+  saveBrandRules(); resolveBrands(); buildSearchIndex(); _lvCache={tab:null,set:null};
+  renderAll(); toast('Brand rules updated');
+}
 function admMap(key,col){ if(col)state.colMap[key]=col; else delete state.colMap[key];
   saveMap(); prepare(); renderAll(); toast('Column mapping updated'); }
 function admSaveSrc(){
@@ -1579,7 +1860,7 @@ function admApplyAll(){ const src=JSON.parse(JSON.stringify(admHost().widgets));
     VIEWCFG.tabs[k].widgets=src.map(w=>Object.assign({},w,{id:uid()})); });
   renderAll(); toast('Applied to all three brand tabs'); }
 function copyCfg(){
-  const blob={cfg:VIEWCFG,map:state.colMap,rate:RATE};
+  const blob={cfg:VIEWCFG,map:state.colMap,brands:state.brandRules,rate:RATE};
   const txt='CONFIG.baked = '+JSON.stringify(blob)+';';
   navigator.clipboard.writeText(txt).then(()=>toast('Config copied — paste it into CONFIG.baked'),
     ()=>{const w=window.open('','_blank');w.document.write('<pre>'+esc(txt)+'</pre>');});
