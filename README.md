@@ -22,6 +22,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | [`subngo-marketing-dashboard.html`](pages/subngo-marketing-dashboard.html)       | [/subngo-marketing-dashboard](https://railway-projects-production-0ea1.up.railway.app/subngo-marketing-dashboard)       | Gated full-funnel marketing dashboard for Sub N' Go |
 | [`jays-sports-diner-dashboard.html`](pages/jays-sports-diner-dashboard.html)     | [/jays-sports-diner-dashboard](https://railway-projects-production-0ea1.up.railway.app/jays-sports-diner-dashboard)     | Gated marketing scoreboard for Jay's Sports Diner |
 | [`itp-sports-dashboard.html`](pages/itp-sports-dashboard.html)                   | [/itp-sports-dashboard](https://railway-projects-production-0ea1.up.railway.app/itp-sports-dashboard)                   | Gated paid media dashboard for ITP Sports (Spartan, Tough Mudder, DEKA) |
+| [`itp-performance-marketing-brief.html`](pages/itp-performance-marketing-brief.html) | [/itp-performance-marketing-brief](https://railway-projects-production-0ea1.up.railway.app/itp-performance-marketing-brief) | ITP Live performance marketing brief intake form (EN/AR, live estimate) |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.

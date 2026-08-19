@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITP Live — Performance Marketing Brief</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312181F'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%230B8A3C'/%3E%3C/svg%3E">
+<style>
+/* ============================================================
+   ITP LIVE — BRIEF INTAKE · design system mirrors the 2026
+   performance pitch template (ink / paper / signal green).
+   AR copy: draft — flag for native review before client use.
+   ============================================================ */
+:root{
+  --ink:#12181F; --ink2:#525E6A; --muted:#8D97A1; --hair:#DCE1E6;
+  --panel:#F6F7F8; --pbord:#E6E9EC; --paper:#FFFFFF;
+  --dark:#131A22; --dpanel:#1B242E; --dbord:#2A3540; --dtxt:#A8B2BC;
+  --green:#0B8A3C; --greenbg:#EAF6EE; --greenbd:#BFE3CC;
+  --err:#C11574; --errbg:#FDF0F7;
+  --sans:"Inter","Noto Sans Arabic","Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,ui-monospace,"SF Mono",Menlo,monospace;
+  --rail:300px;
+  --field:#FFFFFF; --rowalt:#FBFCFC; --ring:rgba(18,24,31,.08);
+  color-scheme:light;
+}
+[data-theme="dark"]{
+  --ink:#E8EDF2; --ink2:#AEB9C4; --muted:#75828F; --hair:#233040;
+  --panel:#151D26; --pbord:#243040; --paper:#0E141B;
+  --dark:#0A0F15; --dpanel:#141C25; --dbord:#26313E; --dtxt:#8D9AA7;
+  --green:#2FBF71; --greenbg:#10231A; --greenbd:#1F4630;
+  --err:#F06EB4; --errbg:#251320;
+  --field:#121A23; --rowalt:#101822; --ring:rgba(232,237,242,.10);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+[dir="rtl"] body{letter-spacing:0}
+.mono{font-family:var(--mono)}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;color:var(--ink)}
+
+/* ---------- shell ---------- */
+#app{min-height:100vh;display:flex;flex-direction:column}
+.shell{flex:1;display:grid;grid-template-columns:var(--rail) 1fr;max-width:1200px;width:100%;margin-inline:auto}
+@media(max-width:979px){.shell{grid-template-columns:1fr}}
+
+/* ---------- topbar ---------- */
+.topbar{background:var(--dark);color:#fff;position:sticky;top:0;z-index:50}
+.topbar .in{max-width:1200px;margin-inline:auto;display:flex;align-items:center;gap:16px;padding:12px 20px}
+.topbar img{height:26px;display:block}
+.topbar .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--dtxt)}
+.topbar .grow{flex:1}
+.langsw{display:flex;border:1px solid var(--dbord);border-radius:7px;overflow:hidden}
+.langsw button{background:transparent;color:var(--dtxt);border:0;padding:6px 12px;font-family:var(--mono);font-size:11px}
+.langsw button.on{background:#fff;color:var(--ink);font-weight:700}
+
+/* ---------- rail ---------- */
+.rail{border-inline-end:1px solid var(--hair);padding:34px 26px;display:flex;flex-direction:column;gap:26px}
+@media(max-width:979px){.rail{display:none}}
+.rail .steps{display:flex;flex-direction:column}
+.rstep{display:flex;gap:12px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--hair);color:var(--muted);cursor:pointer;background:none;border-inline:0;border-top:0;text-align:start;width:100%}
+.rstep .n{font-family:var(--mono);font-size:11px;min-width:22px}
+.rstep .t{font-size:13.5px;font-weight:600;color:var(--ink2)}
+.rstep.on .t{color:var(--ink)}
+.rstep.on .n{color:var(--green);font-weight:700}
+.rstep.done .n::after{content:" ✓";color:var(--green)}
+.rstep:disabled{cursor:default;opacity:.55}
+.meterbox .lbl{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.05em;display:flex;justify-content:space-between}
+.meter{height:4px;background:var(--panel);border:1px solid var(--pbord);border-radius:3px;margin-top:8px;overflow:hidden}
+.meter i{display:block;height:100%;width:0%;background:var(--green);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.meterbox .hint{font-size:11px;color:var(--ink2);margin-top:8px;line-height:1.45}
+.est{border:1px solid var(--greenbd);background:var(--greenbg);border-radius:8px;padding:14px;display:none}
+.est.show{display:block}
+.est .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--green);font-weight:700}
+.est .row{display:flex;justify-content:space-between;align-items:baseline;margin-top:9px}
+.est .row b{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.est .row span{font-family:var(--mono);font-size:9px;color:var(--ink2)}
+.est .note{font-family:var(--mono);font-size:8.5px;color:var(--ink2);margin-top:10px;line-height:1.5}
+.rail .foot{margin-top:auto;font-family:var(--mono);font-size:9px;color:var(--muted);line-height:1.8}
+
+/* ---------- mobile progress ---------- */
+.mprog{display:none;position:sticky;top:50px;z-index:40;background:#fff;border-bottom:1px solid var(--hair);padding:10px 20px}
+@media(max-width:979px){.mprog{display:flex;align-items:center;gap:12px}}
+.mprog{background:var(--paper)}
+.mprog .lbl{font-family:var(--mono);font-size:10px;color:var(--ink2);white-space:nowrap}
+.mprog .meter{flex:1;margin-top:0}
+
+/* ---------- main / steps ---------- */
+.main{padding:40px 48px 90px;position:relative}
+@media(max-width:979px){.main{padding:28px 20px 120px}}
+.step{display:none;animation:in .34s cubic-bezier(.2,.8,.2,1)}
+.step.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.step{animation:none}.meter i{transition:none}}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--muted)}
+h1{font-size:clamp(30px,4.6vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.06;margin-top:10px}
+h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.015em;margin-top:8px}
+.lead{color:var(--ink2);font-size:15px;line-height:1.55;margin-top:14px;max-width:56ch}
+
+/* ---------- fields ---------- */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px 26px;margin-top:30px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.f{display:flex;flex-direction:column;gap:8px}
+.f.full{grid-column:1/-1}
+.f label{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--ink2)}
+.f label .req{color:var(--green)}
+.f label .opt{color:var(--muted)}
+.f input[type=text],.f input[type=number],.f input[type=date],.f select,.f textarea{
+  border:1px solid var(--hair);border-radius:8px;padding:12px 13px;font-size:14.5px;background:var(--field);
+  transition:border-color .15s, box-shadow .15s;width:100%}
+.f textarea{min-height:96px;resize:vertical;line-height:1.5}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px var(--ring)}
+.f.err input,.f.err textarea,.f.err .chips{border-color:var(--err)}
+.f .fe{display:none;font-family:var(--mono);font-size:10px;color:var(--err)}
+.f.err .fe{display:block}
+.join{display:flex}
+.join select{max-width:96px;border-start-end-radius:0;border-end-end-radius:0;border-inline-end:0}
+.join input{border-start-start-radius:0;border-end-start-radius:0;flex:1}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;border:1px solid transparent;border-radius:8px}
+.chip{position:relative}
+.chip input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.chip span{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--hair);border-radius:7px;padding:9px 13px;
+  font-size:13px;font-weight:500;color:var(--ink2);background:var(--field);transition:all .13s;user-select:none}
+.chip span::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hair);transition:background .13s}
+.chip input:checked+span{border-color:var(--ink);color:var(--ink);background:var(--panel);font-weight:600}
+.chip input:checked+span::before{background:var(--green)}
+.chip input:focus-visible+span{box-shadow:0 0 0 3px rgba(18,24,31,.15)}
+.chipnote{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:6px}
+
+/* segmented */
+.seg{display:inline-flex;border:1px solid var(--hair);border-radius:8px;overflow:hidden}
+.seg .chip span{border:0;border-radius:0;padding:10px 20px}
+.seg .chip span::before{display:none}
+.seg .chip+.chip span{border-inline-start:1px solid var(--hair)}
+.seg .chip input:checked+span{background:var(--ink);color:#fff}
+
+/* age slider */
+.age{border:1px solid var(--hair);border-radius:8px;padding:18px 16px 8px}
+.age .read{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)}
+.age .read small{color:var(--muted);font-weight:400}
+.sliders{position:relative;height:34px;margin-top:10px}
+.sliders input[type=range]{position:absolute;inset-inline:0;top:12px;width:100%;-webkit-appearance:none;appearance:none;background:transparent;pointer-events:none;height:6px}
+.sliders .track{position:absolute;inset-inline:0;top:14px;height:3px;background:var(--hair);border-radius:2px}
+.sliders .fill{position:absolute;top:14px;height:3px;background:var(--green);border-radius:2px}
+.sliders input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--ink);cursor:grab;margin-top:0}
+.sliders input::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--ink);cursor:grab}
+
+/* secondary toggle */
+.tgl{display:flex;align-items:center;gap:14px;border:1px solid var(--hair);border-radius:10px;padding:16px;margin-top:28px;background:var(--panel)}
+.tgl .tx b{display:block;font-size:14.5px}
+.tgl .tx span{font-size:12.5px;color:var(--ink2)}
+.tgl .grow{flex:1}
+.sw{position:relative;width:46px;height:26px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.sw i{position:absolute;inset:0;background:var(--hair);border-radius:20px;transition:.18s}
+.sw i::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.sw input:checked+i{background:var(--green)}
+.sw input:checked+i::after{transform:translateX(20px)}
+[dir="rtl"] .sw input:checked+i::after{transform:translateX(-20px)}
+#sec-body{display:none}
+#sec-body.open{display:block}
+
+/* review */
+.spec{border:1px solid var(--hair);border-radius:10px;overflow:hidden;margin-top:26px}
+.spec .sh{background:var(--dark);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center}
+.spec .sh b{font-size:13px}
+.spec .sh span{font-family:var(--mono);font-size:9.5px;color:var(--dtxt)}
+.srow{display:grid;grid-template-columns:220px 1fr;gap:10px;padding:10px 18px;border-top:1px solid var(--panel);font-size:13px}
+.srow:nth-child(odd){background:var(--rowalt)}
+.srow .k{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.04em;padding-top:2px}
+.srow .v{font-weight:600;overflow-wrap:anywhere}
+.srow .v.dim{color:var(--muted);font-weight:400}
+@media(max-width:700px){.srow{grid-template-columns:1fr;gap:2px}}
+
+/* nav */
+.nav{display:flex;gap:12px;margin-top:38px;align-items:center}
+.btn{border-radius:9px;padding:14px 26px;font-size:14px;font-weight:700;border:1px solid var(--ink);transition:.15s}
+.btn.pri{background:var(--ink);color:#fff}
+.btn.pri:hover{background:#000}
+.btn.ghost{background:var(--field);color:var(--ink)}
+.btn.ghost:hover{background:var(--panel)}
+.btn.big{padding:16px 34px;font-size:15px}
+.btn[disabled]{opacity:.55;cursor:wait}
+.nav .keyhint{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-inline-start:auto}
+@media(max-width:700px){.nav .keyhint{display:none}}
+
+/* intro */
+.introMeta{display:flex;flex-wrap:wrap;gap:0 34px;margin-top:34px;border-top:1px solid var(--hair)}
+.im{padding:16px 0;min-width:150px}
+.im b{display:block;font-size:19px;font-weight:800}
+.im span{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.04em}
+
+/* success */
+#done{display:none;text-align:start}
+#done.on{display:block;animation:in .4s cubic-bezier(.2,.8,.2,1)}
+.tick{width:52px;height:52px;border-radius:50%;background:var(--greenbg);border:1px solid var(--greenbd);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:24px;font-weight:800}
+.next{margin-top:34px;border-top:1px solid var(--hair)}
+.nx{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--hair)}
+.nx .n{font-family:var(--mono);font-size:11px;color:var(--muted);padding-top:3px}
+.nx b{font-size:14.5px}
+.nx p{font-size:12.5px;color:var(--ink2);margin-top:3px;line-height:1.5}
+.nx.live .n{color:var(--green);font-weight:700}
+#devout{display:none;margin-top:26px;border:1px dashed var(--err);border-radius:8px;background:var(--errbg);padding:14px}
+#devout pre{font-family:var(--mono);font-size:10px;white-space:pre-wrap;max-height:260px;overflow:auto;margin-top:8px}
+#devout .k{font-family:var(--mono);font-size:10px;color:var(--err);font-weight:700}
+
+/* inline estimate strip (step 3) */
+.eststrip{display:none;margin-top:26px;border:1px solid var(--greenbd);background:var(--greenbg);border-radius:9px;padding:14px 16px}
+.eststrip.show{display:flex;flex-wrap:wrap;gap:8px 30px;align-items:baseline}
+.eststrip .k{font-family:var(--mono);font-size:9.5px;color:var(--green);font-weight:700;width:100%}
+.eststrip b{font-size:17px;font-weight:800}
+.eststrip small{font-family:var(--mono);font-size:9px;color:var(--ink2);display:block}
+.eststrip .note{font-family:var(--mono);font-size:8.5px;color:var(--ink2);width:100%}
+
+/* intro two-col */
+.introgrid{display:grid;grid-template-columns:1fr 330px;gap:60px;align-items:start}
+@media(max-width:900px){.introgrid{grid-template-columns:1fr}.pipe{display:none}}
+.pipe{border:1px solid var(--hair);border-radius:10px;overflow:hidden;margin-top:14px}
+.pipe .ph{background:var(--dark);color:var(--dtxt);font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;padding:10px 14px}
+.pipe .pr{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:13px 14px;border-top:1px solid var(--panel)}
+.pipe .pr .n{font-family:var(--mono);font-size:10px;color:var(--muted);padding-top:2px}
+.pipe .pr b{font-size:12.5px;display:block}
+.pipe .pr span{font-size:11px;color:var(--ink2);line-height:1.45;display:block;margin-top:2px}
+.pipe .pr.g .n{color:var(--green);font-weight:700}
+
+/* ---------- dark-mode component overrides ---------- */
+[data-theme="dark"] .topbar{border-bottom:1px solid var(--dbord)}
+[data-theme="dark"] .btn.pri{background:#E8EDF2;color:#0E141B;border-color:#E8EDF2}
+[data-theme="dark"] .btn.pri:hover{background:#FFFFFF}
+[data-theme="dark"] .btn.ghost{border-color:#384554}
+[data-theme="dark"] .seg .chip input:checked+span{background:#E8EDF2;color:#0E141B}
+[data-theme="dark"] .sliders input::-webkit-slider-thumb{background:#0E141B;border-color:#E8EDF2}
+[data-theme="dark"] .sliders input::-moz-range-thumb{background:#0E141B;border-color:#E8EDF2}
+[data-theme="dark"] .pipe .ph{background:#0A0F15}
+[data-theme="dark"] .spec .sh{background:#0A0F15}
+[data-theme="dark"] .sw i::after{background:#DDE4EA}
+
+/* ---------- admin panel ---------- */
+#adm{position:fixed;inset:0;z-index:100;display:none;background:rgba(6,10,15,.62);backdrop-filter:blur(3px)}
+#adm.on{display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:34px 16px}
+.admP{background:var(--paper);border:1px solid var(--pbord);border-radius:12px;max-width:840px;width:100%;overflow:hidden;margin-bottom:34px}
+.admH{background:var(--dark);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px}
+.admH b{font-size:13.5px}
+.admH .tag{font-family:var(--mono);font-size:9px;color:#F06EB4;border:1px solid #F06EB4;border-radius:5px;padding:2px 7px;letter-spacing:.06em}
+.admH .x{margin-inline-start:auto;background:none;border:0;color:#fff;font-size:20px;line-height:1;padding:2px 8px;cursor:pointer}
+.admB{padding:20px}
+.admNote{font-family:var(--mono);font-size:9.5px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+.admT{width:100%;border-collapse:collapse}
+.admT th{font-family:var(--mono);font-size:9px;color:var(--muted);text-align:start;letter-spacing:.05em;padding:6px 8px;border-bottom:1px solid var(--hair)}
+.admT td{padding:4px 8px;border-bottom:1px solid var(--panel);font-size:12.5px;color:var(--ink)}
+.admT td:first-child{font-weight:600}
+.admT input{width:92px;border:1px solid var(--hair);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:11.5px;background:var(--field);color:var(--ink)}
+.admGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:700px){.admGrid{grid-template-columns:1fr}}
+.admBox{border:1px solid var(--hair);border-radius:8px;padding:12px}
+.admBox .k{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.05em;margin-bottom:10px}
+.admBox label{font-family:var(--mono);font-size:10px;color:var(--ink2);display:inline-flex;align-items:center;gap:6px;margin-inline-end:14px}
+.admBox input{width:92px;border:1px solid var(--hair);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:11.5px;background:var(--field);color:var(--ink)}
+.admTest{margin-top:16px;border:1px solid var(--greenbd);background:var(--greenbg);border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:10.5px;color:var(--ink);line-height:1.6}
+.admF{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;align-items:center}
+.admF .btn{padding:10px 18px;font-size:12.5px}
+.admMsg{font-family:var(--mono);font-size:10px;color:var(--green)}
+
+/* ---------- PDF summary (print target) ---------- */
+#pdoc{display:none;color:#12181F;font-family:var(--sans)}
+#pdoc,#pdoc *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}
+.pdH{background:#131A22;color:#fff;border-radius:8px;padding:12px 18px;display:flex;align-items:center;gap:14px}
+.pdH img{height:22px;display:block}
+.pdH .m{font-family:var(--mono);font-size:9px;color:#A8B2BC;letter-spacing:.05em}
+.pdH .grow{flex:1}
+.pdH .ref{text-align:end;font-family:var(--mono);font-size:9px;color:#A8B2BC;line-height:1.7}
+.pdTitle{font-size:24px;font-weight:800;letter-spacing:-.015em;margin:16px 0 2px;color:#12181F}
+.pdSub{font-size:11.5px;color:#525E6A}
+.pdSec{margin-top:12px;border:1px solid #DCE1E6;border-radius:8px;overflow:hidden;break-inside:avoid}
+.pdSecH{background:#F3F5F7;padding:7px 14px;font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:#525E6A}
+.pdR{display:grid;grid-template-columns:190px 1fr;gap:10px;padding:6px 14px;border-top:1px solid #EEF1F3;font-size:11px}
+.pdR .k{font-family:var(--mono);font-size:8.5px;color:#8D97A1;letter-spacing:.04em;padding-top:2px}
+.pdR .v{font-weight:600;color:#12181F;overflow-wrap:anywhere}
+.pdR .v.dim{color:#8D97A1;font-weight:400}
+.pdEst{margin-top:12px;border:1px solid #BFE3CC;background:#EAF6EE;border-radius:8px;padding:11px 16px;break-inside:avoid}
+.pdEst .k{font-family:var(--mono);font-size:8.5px;color:#0B8A3C;font-weight:700;letter-spacing:.05em}
+.pdEst .nums{display:flex;gap:44px;margin-top:8px}
+.pdEst b{font-size:17px;font-weight:800;color:#12181F}
+.pdEst small{display:block;font-family:var(--mono);font-size:8px;color:#525E6A;margin-top:3px}
+.pdEst .note{font-family:var(--mono);font-size:7.5px;color:#525E6A;margin-top:9px}
+.pdNext{margin-top:12px}
+.pdTail{break-inside:avoid}
+.pdNext>.k{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:#525E6A}
+.pdNx{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:9px}
+.pdNx>div{border:1px solid #DCE1E6;border-radius:8px;padding:8px 11px}
+.pdNx .n{font-family:var(--mono);font-size:8px;color:#0B8A3C;font-weight:700}
+.pdNx b{display:block;font-size:10.5px;margin-top:4px;color:#12181F}
+.pdNx p{font-size:8.5px;color:#525E6A;line-height:1.45;margin-top:3px}
+.pdFoot{margin-top:14px;border-top:1px solid #DCE1E6;padding-top:9px;display:flex;justify-content:space-between;gap:20px;font-family:var(--mono);font-size:8px;color:#8D97A1}
+@page{size:A4;margin:12mm}
+@media print{
+  #app{display:none!important}
+  #adm{display:none!important}
+  #pdoc{display:block}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="in">
+      <img alt="ITP Live" src="data:image/png;base64,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">
+      <span class="tag" data-i="topTag">PERFORMANCE MARKETING · CAMPAIGN BRIEF</span>
+      <span class="grow"></span>
+      <div class="langsw" role="group" aria-label="Theme">
+        <button id="th-l" class="on" onclick="setTheme('light')" data-i="thL">LIGHT</button>
+        <button id="th-d" onclick="setTheme('dark')" data-i="thD">DARK</button>
+      </div>
+      <div class="langsw" role="group" aria-label="Language">
+        <button id="lang-en" class="on" onclick="setLang('en')">EN</button>
+        <button id="lang-ar" onclick="setLang('ar')">عربي</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mprog">
+    <span class="lbl mono" id="mplbl">01 / 05</span>
+    <div class="meter"><i id="mpfill"></i></div>
+    <span class="lbl mono" id="mppct">0%</span>
+  </div>
+
+  <div class="shell">
+
+    <!-- ======================= RAIL ======================= -->
+    <aside class="rail">
+      <div class="steps" id="railsteps"></div>
+      <div class="meterbox">
+        <div class="lbl"><span data-i="strength">BRIEF STRENGTH</span><span id="pct" class="mono">0%</span></div>
+        <div class="meter"><i id="fill"></i></div>
+        <div class="hint" data-i="strengthHint">The sharper the brief, the sharper the media plan.</div>
+      </div>
+      <div class="est" id="est">
+        <div class="k" data-i="estTitle">LIVE ESTIMATE — WHAT THIS BUDGET BUYS</div>
+        <div class="row"><b id="estImp">—</b><span data-i="estImpL">IMPRESSIONS</span></div>
+        <div class="row"><b id="estViews">—</b><span data-i="estViewsL">VIDEO VIEWS</span></div>
+        <div class="note" data-i="estNote">Indicative range from ITP Live MENA benchmarks. Your media plan confirms exact guaranteed numbers.</div>
+      </div>
+      <div class="foot">ITP LIVE · ITP MEDIA GROUP<br><span data-i="footPriv">Your brief goes only to the ITP Live performance team.</span></div>
+    </aside>
+
+    <!-- ======================= MAIN ======================= -->
+    <main class="main">
+
+      <!-- STEP 0 · INTRO -->
+      <section class="step" data-step="0">
+        <div class="eyebrow mono" data-i="s0eb">ITP LIVE — PERFORMANCE MARKETING · 2026</div>
+        <div class="introgrid">
+          <div>
+            <h1 data-i="s0h">Brief the engine.</h1>
+            <p class="lead" data-i="s0lead">Tell us what you need to hit. This brief goes straight to the ITP Live performance team and comes back as a costed, line-by-line media plan with guaranteed numbers.</p>
+            <div class="introMeta">
+              <div class="im"><b data-i="s0m1b">≈ 4 min</b><span data-i="s0m1s">TO COMPLETE</span></div>
+              <div class="im"><b data-i="s0m2b">3–5 days</b><span data-i="s0m2s">TO YOUR MEDIA PLAN</span></div>
+              <div class="im"><b data-i="s0m3b">24 hours</b><span data-i="s0m3s">TO A LIVE DASHBOARD AFTER LAUNCH</span></div>
+            </div>
+            <div class="nav">
+              <button class="btn pri big" onclick="go(1)" data-i="s0cta">Start the brief</button>
+              <span class="keyhint" data-i="keyhint">ENTER ↵ TO CONTINUE</span>
+            </div>
+          </div>
+          <aside class="pipe" aria-hidden="true">
+            <div class="ph" data-i="pipeH">HOW YOUR BRIEF TRAVELS</div>
+            <div class="pr g"><span class="n">01</span><div><b data-i="pipe1b">This brief</b><span data-i="pipe1s">Objectives, audiences, markets, budget.</span></div></div>
+            <div class="pr"><span class="n">02</span><div><b data-i="pipe2b">The engine</b><span data-i="pipe2s">Creators + paid media, planned against MENA benchmarks.</span></div></div>
+            <div class="pr"><span class="n">03</span><div><b data-i="pipe3b">Your media plan</b><span data-i="pipe3s">Line-by-line costs with guaranteed KPIs, in 3–5 working days.</span></div></div>
+            <div class="pr"><span class="n">04</span><div><b data-i="pipe4b">Live dashboard</b><span data-i="pipe4s">You see what we see, 24h after launch.</span></div></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- STEP 1 · BASICS -->
+      <section class="step" data-step="1">
+        <div class="eyebrow mono"><span data-i="stepword">STEP</span> 01 — <span data-i="s1eb">THE BASICS</span></div>
+        <h2 data-i="s1h">Who are we building for?</h2>
+        <div class="grid">
+          <div class="f" id="f-brand">
+            <label for="brand" data-i="l_brand">BRAND NAME <span class="req">*</span></label>
+            <input type="text" id="brand" autocomplete="organization" data-ip="brandPh" placeholder="e.g. Fitness First">
+            <span class="fe" data-i="fe_req">Required — we can't brief a ghost.</span>
+          </div>
+          <div class="f" id="f-site">
+            <label for="site" data-i="l_site">WEBSITE <span class="opt" data-i="optional">— OPTIONAL</span></label>
+            <input type="text" id="site" inputmode="url" placeholder="https://" dir="ltr">
+          </div>
+          <div class="f" id="f-vertical">
+            <label for="vertical" data-i="l_vertical">VERTICAL / INDUSTRY <span class="req">*</span></label>
+            <input type="text" id="vertical" list="verticals" data-ip="verticalPh" placeholder="e.g. Fitness & wellness">
+            <datalist id="verticals">
+              <option>F&B</option><option>Fashion</option><option>Beauty</option><option>Fitness & wellness</option>
+              <option>Real estate</option><option>Healthcare</option><option>Tech</option><option>Gaming</option>
+              <option>Education</option><option>Hospitality & travel</option><option>Retail & e-commerce</option>
+              <option>Automotive</option><option>Finance</option><option>Government</option><option>Entertainment</option>
+            </datalist>
+            <span class="fe" data-i="fe_req2">Required.</span>
+          </div>
+          <div class="f" id="f-social">
+            <label data-i="l_social">WHERE THE BRAND LIVES TODAY <span class="req">*</span></label>
+            <div class="chips" data-group="social">
+              <label class="chip"><input type="checkbox" value="IG"><span>Instagram</span></label>
+              <label class="chip"><input type="checkbox" value="Tiktok"><span>TikTok</span></label>
+              <label class="chip"><input type="checkbox" value="FB"><span>Facebook</span></label>
+              <label class="chip"><input type="checkbox" value="SnapChat"><span>Snapchat</span></label>
+              <label class="chip"><input type="checkbox" value="LinkedIn"><span>LinkedIn</span></label>
+              <label class="chip"><input type="checkbox" value="Twitter"><span>X / Twitter</span></label>
+            </div>
+            <span class="fe" data-i="fe_pick">Pick at least one.</span>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn ghost" onclick="go(0)" data-i="back">Back</button>
+          <button class="btn pri" onclick="next(1)" data-i="cont">Continue</button>
+          <span class="keyhint" data-i="keyhint2">ENTER ↵ TO CONTINUE</span>
+        </div>
+      </section>
+
+      <!-- STEP 2 · CAMPAIGN -->
+      <section class="step" data-step="2">
+        <div class="eyebrow mono"><span data-i="stepword2">STEP</span> 02 — <span data-i="s2eb">THE CAMPAIGN</span></div>
+        <h2 data-i="s2h">Budget, timing, channels.</h2>
+        <div class="grid">
+          <div class="f" id="f-budget">
+            <label for="budget" data-i="l_budget">OVERALL MEDIA BUDGET <span class="req">*</span></label>
+            <div class="join">
+              <select id="cur" aria-label="Currency"><option>USD</option><option>AED</option><option>SAR</option></select>
+              <input type="number" id="budget" min="0" step="1000" placeholder="150000" inputmode="numeric" dir="ltr">
+            </div>
+            <span class="fe" data-i="fe_budget">A number, please — it drives the whole plan.</span>
+          </div>
+          <div class="f" id="f-days">
+            <label for="days" data-i="l_days">CAMPAIGN PERIOD — DAYS <span class="req">*</span></label>
+            <input type="number" id="days" min="1" step="1" placeholder="90" inputmode="numeric" dir="ltr">
+            <span class="fe" data-i="fe_req3">Required.</span>
+          </div>
+          <div class="f" id="f-launch">
+            <label for="launch" data-i="l_launch">EXPECTED LAUNCH DATE <span class="req">*</span></label>
+            <input type="date" id="launch">
+            <span class="fe" data-i="fe_req4">Required.</span>
+          </div>
+          <div class="f" id="f-channels">
+            <label data-i="l_channels">PREFERRED CHANNELS <span class="req">*</span></label>
+            <div class="chips" data-group="channels">
+              <label class="chip"><input type="checkbox" value="Social"><span data-i="ch_social">Paid social</span></label>
+              <label class="chip"><input type="checkbox" value="Search"><span data-i="ch_search">Search</span></label>
+              <label class="chip"><input type="checkbox" value="Youtube - Video"><span data-i="ch_yt">YouTube / video</span></label>
+              <label class="chip"><input type="checkbox" value="Programmatic"><span data-i="ch_prog">Programmatic</span></label>
+              <label class="chip"><input type="checkbox" value="In - Game Advertising"><span data-i="ch_game">In-game</span></label>
+            </div>
+            <span class="fe" data-i="fe_pick2">Pick at least one.</span>
+            <span class="chipnote" data-i="chnote">Not sure? Pick Paid social — we'll recommend the rest in the plan.</span>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="btn ghost" onclick="go(1)" data-i="back2">Back</button>
+          <button class="btn pri" onclick="next(2)" data-i="cont2">Continue</button>
+        </div>
+      </section>
+
+      <!-- STEP 3 · PRIMARY -->
+      <section class="step" data-step="3">
+        <div class="eyebrow mono"><span data-i="stepword3">STEP</span> 03 — <span data-i="s3eb">PRIMARY CAMPAIGN</span></div>
+        <h2 data-i="s3h">The numbers that matter most.</h2>
+        <div class="grid">
+          <div class="f full" id="f-p-obj">
+            <label data-i="l_pobj">PRIMARY OBJECTIVES <span class="req">*</span></label>
+            <div class="chips" data-group="pObjectives">
+              <label class="chip"><input type="checkbox" value="Awareness"><span data-i="o_aw">Awareness</span></label>
+              <label class="chip"><input type="checkbox" value="Traffic"><span data-i="o_tr">Traffic</span></label>
+              <label class="chip"><input type="checkbox" value="Leads"><span data-i="o_ld">Leads</span></label>
+              <label class="chip"><input type="checkbox" value="Engagement"><span data-i="o_en">Engagement</span></label>
+              <label class="chip"><input type="checkbox" value="Conversions"><span data-i="o_cv">Conversions</span></label>
+              <label class="chip"><input type="checkbox" value="App installs"><span data-i="o_ai">App installs</span></label>
+              <label class="chip"><input type="checkbox" value="Video Views"><span data-i="o_vv">Video views</span></label>
+            </div>
+            <span class="fe" data-i="fe_pick3">Pick at least one.</span>
+          </div>
+          <div class="f full" id="f-p-met">
+            <label data-i="l_pmet">MAIN METRICS WE'LL BE JUDGED ON <span class="req">*</span></label>
+            <div class="chips" data-group="pMetrics">
+              <label class="chip"><input type="checkbox" value="Impressions"><span data-i="m_imp">Impressions</span></label>
+              <label class="chip"><input type="checkbox" value="Reach"><span data-i="m_re">Reach</span></label>
+              <label class="chip"><input type="checkbox" value="Video Views"><span data-i="m_vv">Video views</span></label>
+              <label class="chip"><input type="checkbox" value="Clicks"><span data-i="m_cl">Clicks</span></label>
+              <label class="chip"><input type="checkbox" value="Landing Page Views"><span data-i="m_lpv">Landing page views</span></label>
+              <label class="chip"><input type="checkbox" value="Leads"><span data-i="m_ld">Leads</span></label>
+              <label class="chip"><input type="checkbox" value="Conversions"><span data-i="m_cv">Conversions</span></label>
+              <label class="chip"><input type="checkbox" value="App Installs"><span data-i="m_ai">App installs</span></label>
+              <label class="chip"><input type="checkbox" value="Engagement"><span data-i="m_en">Engagement</span></label>
+            </div>
+            <span class="fe" data-i="fe_pick4">Pick at least one.</span>
+          </div>
+          <div class="f" id="f-p-tgt">
+            <label for="pTargets" data-i="l_ptgt">TARGETS FOR THOSE METRICS <span class="req">*</span></label>
+            <input type="text" id="pTargets" data-ip="ptgtPh" placeholder="e.g. 30M impressions · CPI ≤ $0.20">
+            <span class="fe" data-i="fe_req5">Give us a number to beat.</span>
+          </div>
+          <div class="f" id="f-p-int">
+            <label for="pInterest" data-i="l_pint">AUDIENCE — INTERESTS <span class="req">*</span></label>
+            <input type="text" id="pInterest" data-ip="pintPh" placeholder="e.g. fitness, wellness, running">
+            <span class="fe" data-i="fe_req6">Required.</span>
+          </div>
+          <div class="f" id="f-p-age">
+            <label data-i="l_page">AUDIENCE — AGE RANGE <span class="req">*</span></label>
+            <div class="age">
+              <div class="read"><span id="ageRead" class="mono" dir="ltr">22 – 45</span> <small data-i="ageYrs">years</small></div>
+              <div class="sliders">
+                <div class="track"></div><div class="fill" id="ageFill"></div>
+                <input type="range" id="ageMin" min="13" max="65" value="22" aria-label="Minimum age">
+                <input type="range" id="ageMax" min="13" max="65" value="45" aria-label="Maximum age">
+              </div>
+            </div>
+          </div>
+          <div class="f" id="f-p-gen">
+            <label data-i="l_pgen">AUDIENCE — GENDER <span class="req">*</span></label>
+            <div class="seg chips" data-group="pGender" data-radio="1">
+              <label class="chip"><input type="radio" name="pg" value="Both" checked><span data-i="g_b">Both</span></label>
+              <label class="chip"><input type="radio" name="pg" value="Female"><span data-i="g_f">Female</span></label>
+              <label class="chip"><input type="radio" name="pg" value="Male"><span data-i="g_m">Male</span></label>
+            </div>
+          </div>
+          <div class="f full" id="f-p-mkt">
+            <label data-i="l_pmkt">MARKETS <span class="req">*</span></label>
+            <div class="chips" data-group="pMarkets">
+              <label class="chip"><input type="checkbox" value="UAE"><span>UAE</span></label>
+              <label class="chip"><input type="checkbox" value="KSA"><span>KSA</span></label>
+              <label class="chip"><input type="checkbox" value="QAT"><span>QAT</span></label>
+              <label class="chip"><input type="checkbox" value="KWT"><span>KWT</span></label>
+              <label class="chip"><input type="checkbox" value="BHR"><span>BHR</span></label>
+              <label class="chip"><input type="checkbox" value="OMN"><span>OMN</span></label>
+              <label class="chip"><input type="checkbox" value="EGY"><span>EGY</span></label>
+              <label class="chip"><input type="checkbox" value="JOR"><span>JOR</span></label>
+              <label class="chip"><input type="checkbox" value="LEB"><span>LEB</span></label>
+              <label class="chip"><input type="checkbox" value="IRQ"><span>IRQ</span></label>
+              <label class="chip"><input type="checkbox" value="Europe"><span data-i="mk_eu">Europe</span></label>
+              <label class="chip"><input type="checkbox" value="East Asia"><span data-i="mk_ea">East Asia</span></label>
+              <label class="chip"><input type="checkbox" value="Africa"><span data-i="mk_af">Africa</span></label>
+              <label class="chip"><input type="checkbox" value="North America"><span data-i="mk_na">North America</span></label>
+              <label class="chip"><input type="checkbox" value="South America"><span data-i="mk_sa">South America</span></label>
+            </div>
+            <span class="fe" data-i="fe_pick5">Pick at least one market.</span>
+          </div>
+          <div class="f full" id="f-p-det">
+            <label for="pDetails" data-i="l_pdet">ANYTHING ELSE ON THE MAIN CAMPAIGN <span class="req">*</span></label>
+            <textarea id="pDetails" data-ip="pdetPh" placeholder="Landing pages, key dates, offers, creative you already have, what's worked before, what to avoid…"></textarea>
+            <span class="fe" data-i="fe_req7">Even one line helps. What should we know?</span>
+          </div>
+        </div>
+        <div class="eststrip" id="eststrip">
+          <span class="k" data-i="est2Title">LIVE ESTIMATE — WHAT THIS BUDGET ROUGHLY BUYS IN YOUR MARKETS</span>
+          <span><b id="estImp2">—</b><small data-i="est2Imp">IMPRESSIONS</small></span>
+          <span><b id="estViews2">—</b><small data-i="est2Views">VIDEO VIEWS</small></span>
+          <span class="note" data-i="est2Note">Indicative, from ITP Live MENA benchmarks. The media plan locks the exact guaranteed numbers.</span>
+        </div>
+        <div class="nav">
+          <button class="btn ghost" onclick="go(2)" data-i="back3">Back</button>
+          <button class="btn pri" onclick="next(3)" data-i="cont3">Continue</button>
+        </div>
+      </section>
+
+      <!-- STEP 4 · SECONDARY -->
+      <section class="step" data-step="4">
+        <div class="eyebrow mono"><span data-i="stepword4">STEP</span> 04 — <span data-i="s4eb">SECONDARY CAMPAIGN</span></div>
+        <h2 data-i="s4h">Running a second push?</h2>
+        <p class="lead" data-i="s4lead">A retargeting wave, a second market, a different product. If it's one campaign only, leave this off and continue.</p>
+
+        <div class="tgl">
+          <div class="tx grow"><b data-i="tglB">Add a secondary campaign</b><span data-i="tglS"> — objectives, audience and markets of their own</span></div>
+          <label class="sw"><input type="checkbox" id="hasSec" onchange="toggleSec()"><i></i></label>
+        </div>
+
+        <div id="sec-body">
+          <div class="grid">
+            <div class="f full" id="f-s-obj">
+              <label data-i="l_sobj">SECONDARY OBJECTIVES <span class="req">*</span></label>
+              <div class="chips" data-group="sObjectives">
+                <label class="chip"><input type="checkbox" value="Awareness"><span data-i="o_aw2">Awareness</span></label>
+                <label class="chip"><input type="checkbox" value="Traffic"><span data-i="o_tr2">Traffic</span></label>
+                <label class="chip"><input type="checkbox" value="Leads"><span data-i="o_ld2">Leads</span></label>
+                <label class="chip"><input type="checkbox" value="Engagement"><span data-i="o_en2">Engagement</span></label>
+                <label class="chip"><input type="checkbox" value="Conversions"><span data-i="o_cv2">Conversions</span></label>
+                <label class="chip"><input type="checkbox" value="App installs"><span data-i="o_ai2">App installs</span></label>
+                <label class="chip"><input type="checkbox" value="Video Views"><span data-i="o_vv2">Video views</span></label>
+              </div>
+              <span class="fe" data-i="fe_pick6">Pick at least one.</span>
+            </div>
+            <div class="f full" id="f-s-met">
+              <label data-i="l_smet">SECONDARY MAIN METRICS <span class="req">*</span></label>
+              <div class="chips" data-group="sMetrics">
+                <label class="chip"><input type="checkbox" value="Impressions"><span data-i="m_imp2">Impressions</span></label>
+                <label class="chip"><input type="checkbox" value="Reach"><span data-i="m_re2">Reach</span></label>
+                <label class="chip"><input type="checkbox" value="Video Views"><span data-i="m_vv2">Video views</span></label>
+                <label class="chip"><input type="checkbox" value="Clicks"><span data-i="m_cl2">Clicks</span></label>
+                <label class="chip"><input type="checkbox" value="Landing Page Views"><span data-i="m_lpv2">Landing page views</span></label>
+                <label class="chip"><input type="checkbox" value="Leads"><span data-i="m_ld2">Leads</span></label>
+                <label class="chip"><input type="checkbox" value="Conversions"><span data-i="m_cv2">Conversions</span></label>
+                <label class="chip"><input type="checkbox" value="App Installs"><span data-i="m_ai2">App installs</span></label>
+                <label class="chip"><input type="checkbox" value="Engagement"><span data-i="m_en2">Engagement</span></label>
+              </div>
+              <span class="fe" data-i="fe_pick7">Pick at least one.</span>
+            </div>
+            <div class="f" id="f-s-tgt">
+              <label for="sTargets" data-i="l_stgt">SECONDARY TARGETS <span class="req">*</span></label>
+              <input type="text" id="sTargets" data-ip="stgtPh" placeholder="e.g. 500K clicks at CPC ≤ $0.10">
+              <span class="fe" data-i="fe_req8">Required when secondary is on.</span>
+            </div>
+            <div class="f" id="f-s-int">
+              <label for="sInterest" data-i="l_sint">SECONDARY AUDIENCE — INTERESTS <span class="req">*</span></label>
+              <input type="text" id="sInterest" data-ip="sintPh" placeholder="e.g. past purchasers, lookalikes">
+              <span class="fe" data-i="fe_req9">Required when secondary is on.</span>
+            </div>
+            <div class="f" id="f-s-age">
+              <label data-i="l_sage">SECONDARY AUDIENCE — AGE RANGE <span class="req">*</span></label>
+              <div class="age">
+                <div class="read"><span id="sAgeRead" class="mono" dir="ltr">25 – 54</span> <small data-i="ageYrs2">years</small></div>
+                <div class="sliders">
+                  <div class="track"></div><div class="fill" id="sAgeFill"></div>
+                  <input type="range" id="sAgeMin" min="13" max="65" value="25" aria-label="Minimum age">
+                  <input type="range" id="sAgeMax" min="13" max="65" value="54" aria-label="Maximum age">
+                </div>
+              </div>
+            </div>
+            <div class="f" id="f-s-gen">
+              <label data-i="l_sgen">SECONDARY AUDIENCE — GENDER <span class="req">*</span></label>
+              <div class="seg chips" data-group="sGender" data-radio="1">
+                <label class="chip"><input type="radio" name="sg" value="Both" checked><span data-i="g_b2">Both</span></label>
+                <label class="chip"><input type="radio" name="sg" value="Female"><span data-i="g_f2">Female</span></label>
+                <label class="chip"><input type="radio" name="sg" value="Male"><span data-i="g_m2">Male</span></label>
+              </div>
+            </div>
+            <div class="f full" id="f-s-mkt">
+              <label data-i="l_smkt">SECONDARY MARKETS <span class="req">*</span></label>
+              <div class="chips" data-group="sMarkets">
+                <label class="chip"><input type="checkbox" value="UAE"><span>UAE</span></label>
+                <label class="chip"><input type="checkbox" value="KSA"><span>KSA</span></label>
+                <label class="chip"><input type="checkbox" value="QAT"><span>QAT</span></label>
+                <label class="chip"><input type="checkbox" value="KWT"><span>KWT</span></label>
+                <label class="chip"><input type="checkbox" value="BHR"><span>BHR</span></label>
+                <label class="chip"><input type="checkbox" value="OMN"><span>OMN</span></label>
+                <label class="chip"><input type="checkbox" value="EGY"><span>EGY</span></label>
+                <label class="chip"><input type="checkbox" value="JOR"><span>JOR</span></label>
+                <label class="chip"><input type="checkbox" value="LEB"><span>LEB</span></label>
+                <label class="chip"><input type="checkbox" value="IRQ"><span>IRQ</span></label>
+                <label class="chip"><input type="checkbox" value="Europe"><span data-i="mk_eu2">Europe</span></label>
+                <label class="chip"><input type="checkbox" value="East Asia"><span data-i="mk_ea2">East Asia</span></label>
+                <label class="chip"><input type="checkbox" value="Africa"><span data-i="mk_af2">Africa</span></label>
+                <label class="chip"><input type="checkbox" value="North America"><span data-i="mk_na2">North America</span></label>
+                <label class="chip"><input type="checkbox" value="South America"><span data-i="mk_sa2">South America</span></label>
+              </div>
+              <span class="fe" data-i="fe_pick8">Pick at least one market.</span>
+            </div>
+            <div class="f full" id="f-s-det">
+              <label for="sDetails" data-i="l_sdet">SECONDARY CAMPAIGN — ADDITIONAL DETAILS <span class="req">*</span></label>
+              <textarea id="sDetails" data-ip="sdetPh" placeholder="What's different about this push?"></textarea>
+              <span class="fe" data-i="fe_req10">Required when secondary is on.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <button class="btn ghost" onclick="go(3)" data-i="back4">Back</button>
+          <button class="btn pri" onclick="next(4)" data-i="cont4">Review the brief</button>
+        </div>
+      </section>
+
+      <!-- STEP 5 · REVIEW -->
+      <section class="step" data-step="5">
+        <div class="eyebrow mono"><span data-i="stepword5">STEP</span> 05 — <span data-i="s5eb">REVIEW & SEND</span></div>
+        <h2 data-i="s5h">Read it like we will.</h2>
+        <p class="lead" data-i="s5lead">This is exactly what lands on the performance team's desk. If it looks right, send it.</p>
+        <div class="spec">
+          <div class="sh"><b data-i="specTitle">CAMPAIGN BRIEF — SPEC SHEET</b><span id="specStamp" class="mono" dir="ltr"></span></div>
+          <div id="specBody"></div>
+        </div>
+        <div class="nav">
+          <button class="btn ghost" onclick="go(4)" data-i="back5">Back</button>
+          <button class="btn pri big" id="sendBtn" onclick="submitBrief()" data-i="send">Send the brief →</button>
+        </div>
+      </section>
+
+      <!-- SUCCESS -->
+      <section id="done">
+        <div class="tick">✓</div>
+        <div class="eyebrow mono" style="margin-top:22px"><span data-i="dn_eb">BRIEF RECEIVED · REF </span><span id="ref" dir="ltr"></span></div>
+        <h2 data-i="dn_h">In the engine. Here's what happens next.</h2>
+        <div class="next">
+          <div class="nx live"><span class="n">NOW</span><div><b data-i="nx1b">Brief logged with the performance team</b><p data-i="nx1p">A strategist reads every line — no auto-replies, a human plans your money.</p></div></div>
+          <div class="nx"><span class="n" data-i="nx2n">3–5 DAYS</span><div><b data-i="nx2b">Costed media plan & proposal</b><p data-i="nx2p">Line-by-line budget with guaranteed impressions, views and clicks. Nothing spends before you approve.</p></div></div>
+          <div class="nx"><span class="n" data-i="nx3n">PRE-LAUNCH</span><div><b data-i="nx3b">Ad preview & sign-off</b><p data-i="nx3p">You see every ad exactly as it will run, before it runs.</p></div></div>
+          <div class="nx"><span class="n" data-i="nx4n">+24 HOURS</span><div><b data-i="nx4b">Your live dashboard</b><p data-i="nx4p">One link, always current. You see what we see.</p></div></div>
+        </div>
+        <div class="nav">
+          <button class="btn pri" onclick="pdfNow()" data-i="dn_print">Download the PDF summary</button>
+        </div>
+        <div id="devout"><span class="k">DEV MODE — PAYLOAD SENT TO INTEGRATION LAYER</span><pre id="devjson"></pre></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= ADMIN — benchmark control (internal) ================= -->
+<div id="adm" dir="ltr" role="dialog" aria-modal="true" aria-label="Benchmark admin">
+  <div class="admP">
+    <div class="admH"><b>Estimate benchmarks</b><span class="tag">ADMIN · INTERNAL — NEVER CLIENT-FACING</span><button class="x" onclick="closeAdmin()" aria-label="Close">×</button></div>
+    <div class="admB">
+      <div class="admNote">These CPM ranges (USD) drive the client-facing live estimate. APPLY &amp; SAVE takes effect instantly and persists in this browser. COPY CONFIG JSON gives the portal team a block to bake in permanently. Open this panel with <b>?admin=1</b> or <b>Ctrl+Shift+B</b> · gate code lives in CONFIG.ADMIN_CODE.</div>
+      <table class="admT"><thead><tr><th>MARKET</th><th>CPM LOW · USD</th><th>CPM HIGH · USD</th></tr></thead><tbody id="admRows"></tbody></table>
+      <div class="admGrid">
+        <div class="admBox"><div class="k">VIDEO VIEW RATE — % OF IMPRESSIONS</div>
+          <label>LOW <input id="admVtrLo" type="number" min="1" max="100" step="1"></label>
+          <label>HIGH <input id="admVtrHi" type="number" min="1" max="100" step="1"></label>
+        </div>
+        <div class="admBox"><div class="k">FX — UNITS PER 1 USD</div>
+          <label>AED <input id="admFxAed" type="number" step="0.0001"></label>
+          <label>SAR <input id="admFxSar" type="number" step="0.0001"></label>
+        </div>
+      </div>
+      <div class="admTest" id="admTest">—</div>
+      <div class="admF">
+        <button class="btn pri" onclick="admApply()">Apply &amp; save</button>
+        <button class="btn ghost" onclick="admReset()">Reset defaults</button>
+        <button class="btn ghost" onclick="admCopy()">Copy CONFIG JSON</button>
+        <span class="admMsg" id="admMsg"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PDF SUMMARY (print target, built on demand) ================= -->
+<div id="pdoc" aria-hidden="true"></div>
+
+<script>
+/* =============================================================
+   INTEGRATION LAYER — for the ITP portal team
+   -------------------------------------------------------------
+   CONFIG.ENDPOINT = ""      → demo mode (no network call).
+   CONFIG.ENDPOINT = "https://portal.itp.internal/api/briefs"
+                             → POSTs the JSON payload below as
+                               application/json. Schema mirrors the
+                               original Google Form 1:1 (see keys).
+   Every submission also lands on window.__ITP_BRIEF and in the
+   console. Add ?dev=1 to the URL to see the payload on screen.
+
+   ADMIN   → ?admin=1 or Ctrl+Shift+B, code = CONFIG.ADMIN_CODE
+             (client-side soft gate). Edits CPM/VTR/FX behind the
+             live estimate; persists per-browser; COPY CONFIG JSON
+             exports values for permanent baking-in.
+   THEME   → LIGHT/DARK toggle in the top bar; remembers choice,
+             first visit follows the visitor's system preference.
+   PDF     → success screen builds a branded A4 summary (#pdoc)
+             and opens the print dialog — client saves as PDF.
+   ============================================================= */
+const CONFIG = {
+  ENDPOINT: "",
+  ADMIN_CODE: "itp-2026",
+  BENCH: { // USD CPM lo/hi per market — ITP Live MENA benchmarks (indicative)
+    "KSA":[1.7,4.5],"UAE":[2.2,6.5],"QAT":[3,7],"KWT":[3,7],"BHR":[2.5,6],"OMN":[2.5,6],
+    "EGY":[1.5,3.5],"JOR":[2,5],"LEB":[2,5],"IRQ":[1.5,4],"Europe":[4,9],"East Asia":[3,7],
+    "Africa":[2,5],"North America":[6,12],"South America":[2,5]
+  },
+  VTR:[0.25,0.45], FX:{USD:1,AED:3.6725,SAR:3.75}
+};
+
+/* ---------- safe storage + runtime benchmark state (admin-editable) ---------- */
+const store={
+  get(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  del(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+let BENCH=JSON.parse(JSON.stringify(CONFIG.BENCH)), VTRr=CONFIG.VTR.slice(), FXr={...CONFIG.FX}, BENCH_SRC="default";
+(function(){
+  const s=store.get("itp_bench_v1");
+  if(s){ try{ const o=JSON.parse(s);
+    if(o.BENCH) BENCH=o.BENCH; if(o.VTR) VTRr=o.VTR; if(o.FX) FXr=o.FX;
+    BENCH_SRC="custom · saved "+(o.savedAt||"");
+  }catch(e){} }
+})();
+
+/* ---------- i18n ---------- */
+const I = {
+ en:{
+  topTag:"PERFORMANCE MARKETING · CAMPAIGN BRIEF",
+  steps:["Welcome","The basics","The campaign","Primary campaign","Secondary campaign","Review & send"],
+  strength:"BRIEF STRENGTH", strengthHint:"The sharper the brief, the sharper the media plan.",
+  estTitle:"LIVE ESTIMATE — WHAT THIS BUDGET BUYS", estImpL:"IMPRESSIONS", estViewsL:"VIDEO VIEWS",
+  estNote:"Indicative range from ITP Live MENA benchmarks. Your media plan confirms exact guaranteed numbers.",
+  footPriv:"Your brief goes only to the ITP Live performance team.",
+  s0eb:"ITP LIVE — PERFORMANCE MARKETING · 2026", s0h:"Brief the engine.",
+  s0lead:"Tell us what you need to hit. This brief goes straight to the ITP Live performance team and comes back as a costed, line-by-line media plan with guaranteed numbers.",
+  s0m1b:"≈ 4 min", s0m1s:"TO COMPLETE", s0m2b:"3–5 days", s0m2s:"TO YOUR MEDIA PLAN", s0m3b:"24 hours", s0m3s:"TO A LIVE DASHBOARD AFTER LAUNCH",
+  s0cta:"Start the brief", keyhint:"ENTER ↵ TO CONTINUE", keyhint2:"ENTER ↵ TO CONTINUE",
+  stepword:"STEP", stepword2:"STEP", stepword3:"STEP", stepword4:"STEP", stepword5:"STEP",
+  s1eb:"THE BASICS", s1h:"Who are we building for?",
+  l_brand:'BRAND NAME <span class="req">*</span>', brandPh:"e.g. Fitness First",
+  l_site:'WEBSITE <span class="opt">— OPTIONAL</span>',
+  l_vertical:'VERTICAL / INDUSTRY <span class="req">*</span>', verticalPh:"e.g. Fitness & wellness",
+  l_social:'WHERE THE BRAND LIVES TODAY <span class="req">*</span>',
+  fe_req:"Required — we can't brief a ghost.", fe_req2:"Required.", fe_pick:"Pick at least one.",
+  back:"Back", back2:"Back", back3:"Back", back4:"Back", back5:"Back",
+  cont:"Continue", cont2:"Continue", cont3:"Continue", cont4:"Review the brief",
+  s2eb:"THE CAMPAIGN", s2h:"Budget, timing, channels.",
+  l_budget:'OVERALL MEDIA BUDGET <span class="req">*</span>', fe_budget:"A number, please — it drives the whole plan.",
+  l_days:'CAMPAIGN PERIOD — DAYS <span class="req">*</span>', fe_req3:"Required.",
+  l_launch:'EXPECTED LAUNCH DATE <span class="req">*</span>', fe_req4:"Required.",
+  l_channels:'PREFERRED CHANNELS <span class="req">*</span>', fe_pick2:"Pick at least one.",
+  ch_social:"Paid social", ch_search:"Search", ch_yt:"YouTube / video", ch_prog:"Programmatic", ch_game:"In-game",
+  chnote:"Not sure? Pick Paid social — we'll recommend the rest in the plan.",
+  s3eb:"PRIMARY CAMPAIGN", s3h:"The numbers that matter most.",
+  l_pobj:'PRIMARY OBJECTIVES <span class="req">*</span>', l_pmet:'MAIN METRICS WE\'LL BE JUDGED ON <span class="req">*</span>',
+  o_aw:"Awareness",o_tr:"Traffic",o_ld:"Leads",o_en:"Engagement",o_cv:"Conversions",o_ai:"App installs",o_vv:"Video views",
+  o_aw2:"Awareness",o_tr2:"Traffic",o_ld2:"Leads",o_en2:"Engagement",o_cv2:"Conversions",o_ai2:"App installs",o_vv2:"Video views",
+  m_imp:"Impressions",m_re:"Reach",m_vv:"Video views",m_cl:"Clicks",m_lpv:"Landing page views",m_ld:"Leads",m_cv:"Conversions",m_ai:"App installs",m_en:"Engagement",
+  m_imp2:"Impressions",m_re2:"Reach",m_vv2:"Video views",m_cl2:"Clicks",m_lpv2:"Landing page views",m_ld2:"Leads",m_cv2:"Conversions",m_ai2:"App installs",m_en2:"Engagement",
+  fe_pick3:"Pick at least one.", fe_pick4:"Pick at least one.",
+  l_ptgt:'TARGETS FOR THOSE METRICS <span class="req">*</span>', ptgtPh:"e.g. 30M impressions · CPI ≤ $0.20", fe_req5:"Give us a number to beat.",
+  l_pint:'AUDIENCE — INTERESTS <span class="req">*</span>', pintPh:"e.g. fitness, wellness, running", fe_req6:"Required.",
+  l_page:'AUDIENCE — AGE RANGE <span class="req">*</span>', ageYrs:"years", ageYrs2:"years",
+  l_pgen:'AUDIENCE — GENDER <span class="req">*</span>', g_b:"Both",g_f:"Female",g_m:"Male",g_b2:"Both",g_f2:"Female",g_m2:"Male",
+  l_pmkt:'MARKETS <span class="req">*</span>', fe_pick5:"Pick at least one market.",
+  mk_eu:"Europe",mk_ea:"East Asia",mk_af:"Africa",mk_na:"North America",mk_sa:"South America",
+  mk_eu2:"Europe",mk_ea2:"East Asia",mk_af2:"Africa",mk_na2:"North America",mk_sa2:"South America",
+  l_pdet:'ANYTHING ELSE ON THE MAIN CAMPAIGN <span class="req">*</span>',
+  pdetPh:"Landing pages, key dates, offers, creative you already have, what's worked before, what to avoid…",
+  fe_req7:"Even one line helps. What should we know?",
+  est2Title:"LIVE ESTIMATE — WHAT THIS BUDGET ROUGHLY BUYS IN YOUR MARKETS", est2Imp:"IMPRESSIONS", est2Views:"VIDEO VIEWS",
+  est2Note:"Indicative, from ITP Live MENA benchmarks. The media plan locks the exact guaranteed numbers.",
+  s4eb:"SECONDARY CAMPAIGN", s4h:"Running a second push?",
+  s4lead:"A retargeting wave, a second market, a different product. If it's one campaign only, leave this off and continue.",
+  tglB:"Add a secondary campaign", tglS:" — objectives, audience and markets of their own",
+  l_sobj:'SECONDARY OBJECTIVES <span class="req">*</span>', l_smet:'SECONDARY MAIN METRICS <span class="req">*</span>',
+  fe_pick6:"Pick at least one.", fe_pick7:"Pick at least one.",
+  l_stgt:'SECONDARY TARGETS <span class="req">*</span>', stgtPh:"e.g. 500K clicks at CPC ≤ $0.10", fe_req8:"Required when secondary is on.",
+  l_sint:'SECONDARY AUDIENCE — INTERESTS <span class="req">*</span>', sintPh:"e.g. past purchasers, lookalikes", fe_req9:"Required when secondary is on.",
+  l_sage:'SECONDARY AUDIENCE — AGE RANGE <span class="req">*</span>', l_sgen:'SECONDARY AUDIENCE — GENDER <span class="req">*</span>',
+  l_smkt:'SECONDARY MARKETS <span class="req">*</span>', fe_pick8:"Pick at least one market.",
+  l_sdet:'SECONDARY CAMPAIGN — ADDITIONAL DETAILS <span class="req">*</span>', sdetPh:"What's different about this push?", fe_req10:"Required when secondary is on.",
+  s5eb:"REVIEW & SEND", s5h:"Read it like we will.",
+  s5lead:"This is exactly what lands on the performance team's desk. If it looks right, send it.",
+  specTitle:"CAMPAIGN BRIEF — SPEC SHEET", send:"Send the brief →", sending:"Sending…",
+  dn_eb:"BRIEF RECEIVED · REF ", dn_h:"In the engine. Here's what happens next.",
+  nx1b:"Brief logged with the performance team", nx1p:"A strategist reads every line. No auto-replies, a human plans your money.",
+  nx2n:"3–5 DAYS", nx2b:"Costed media plan & proposal", nx2p:"Line-by-line budget with guaranteed impressions, views and clicks. Nothing spends before you approve.",
+  nx3n:"PRE-LAUNCH", nx3b:"Ad preview & sign-off", nx3p:"You see every ad exactly as it will run, before it runs.",
+  nx4n:"+24 HOURS", nx4b:"Your live dashboard", nx4p:"One link, always current. You see what we see.",
+  dn_print:"Download the PDF summary",
+  thL:"LIGHT", thD:"DARK",
+  pdf_m:"PERFORMANCE MARKETING — CAMPAIGN BRIEF", pdf_ref:"REF",
+  pdf_sub:"Performance marketing campaign brief, as submitted to ITP Live.",
+  pdf_s1:"01 · THE BASICS", pdf_s2:"02 · THE CAMPAIGN", pdf_s3:"03 · PRIMARY CAMPAIGN", pdf_s4:"04 · SECONDARY CAMPAIGN",
+  pdf_est:"INDICATIVE ESTIMATE SHOWN AT SUBMISSION", pdf_next:"WHAT HAPPENS NEXT", pdf_now:"NOW",
+  pdf_conf:"CONFIDENTIAL · PREPARED FOR THE ITP LIVE PERFORMANCE TEAM",
+  pipeH:"HOW YOUR BRIEF TRAVELS", pipe1b:"This brief", pipe1s:"Objectives, audiences, markets, budget.",
+  pipe2b:"The engine", pipe2s:"Creators + paid media, planned against MENA benchmarks.",
+  pipe3b:"Your media plan", pipe3s:"Line-by-line costs with guaranteed KPIs, in 3–5 working days.",
+  pipe4b:"Live dashboard", pipe4s:"You see what we see, 24h after launch.",
+  none:"—", secOff:"No secondary campaign", yrs:"years",
+  k_brand:"Brand",k_site:"Website",k_vertical:"Vertical",k_social:"Social presence",k_budget:"Overall budget",
+  k_days:"Period (days)",k_launch:"Launch date",k_channels:"Channels",
+  k_pobj:"Primary objectives",k_pmet:"Primary metrics",k_ptgt:"Primary targets",k_paud:"Primary audience",k_pmkt:"Primary markets",k_pdet:"Primary details",
+  k_sec:"Secondary campaign",k_sobj:"Secondary objectives",k_smet:"Secondary metrics",k_stgt:"Secondary targets",k_saud:"Secondary audience",k_smkt:"Secondary markets",k_sdet:"Secondary details"
+ },
+ ar:{
+  topTag:"التسويق الأدائي · موجز الحملة",
+  steps:["البداية","الأساسيات","الحملة","الحملة الأساسية","الحملة الثانوية","المراجعة والإرسال"],
+  strength:"اكتمال الموجز", strengthHint:"كلما كان الموجز أدق، كانت الخطة الإعلامية أدق.",
+  estTitle:"تقدير مباشر — ماذا تشتري هذه الميزانية", estImpL:"مرات الظهور", estViewsL:"مشاهدات الفيديو",
+  estNote:"نطاق استرشادي من معايير ITP Live في المنطقة. الخطة الإعلامية تحدد الأرقام المضمونة النهائية.",
+  footPriv:"موجزك يصل فقط إلى فريق الأداء في ITP Live.",
+  s0eb:"ITP LIVE — التسويق الأدائي · 2026", s0h:"ابدأ تشغيل المحرّك.",
+  s0lead:"أخبرنا بالأرقام التي تريد تحقيقها. يصل هذا الموجز مباشرة إلى فريق الأداء في ITP Live ويعود إليك خطة إعلامية مفصّلة بأرقام مضمونة.",
+  s0m1b:"≈ 4 دقائق", s0m1s:"لإكمال الموجز", s0m2b:"3–5 أيام", s0m2s:"حتى خطتك الإعلامية", s0m3b:"24 ساعة", s0m3s:"حتى لوحة متابعة مباشرة بعد الإطلاق",
+  s0cta:"ابدأ الموجز", keyhint:"ENTER ↵ للمتابعة", keyhint2:"ENTER ↵ للمتابعة",
+  stepword:"خطوة", stepword2:"خطوة", stepword3:"خطوة", stepword4:"خطوة", stepword5:"خطوة",
+  s1eb:"الأساسيات", s1h:"لمن نبني هذه الحملة؟",
+  l_brand:'اسم العلامة التجارية <span class="req">*</span>', brandPh:"مثال: فيتنس فيرست",
+  l_site:'الموقع الإلكتروني <span class="opt">— اختياري</span>',
+  l_vertical:'القطاع / المجال <span class="req">*</span>', verticalPh:"مثال: اللياقة والصحة",
+  l_social:'أين تتواجد العلامة اليوم <span class="req">*</span>',
+  fe_req:"حقل مطلوب.", fe_req2:"حقل مطلوب.", fe_pick:"اختر خيارًا واحدًا على الأقل.",
+  back:"رجوع", back2:"رجوع", back3:"رجوع", back4:"رجوع", back5:"رجوع",
+  cont:"متابعة", cont2:"متابعة", cont3:"متابعة", cont4:"مراجعة الموجز",
+  s2eb:"الحملة", s2h:"الميزانية والتوقيت والقنوات.",
+  l_budget:'الميزانية الإجمالية للإعلانات <span class="req">*</span>', fe_budget:"أدخل رقمًا — الميزانية أساس الخطة كلها.",
+  l_days:'مدة الحملة — بالأيام <span class="req">*</span>', fe_req3:"حقل مطلوب.",
+  l_launch:'تاريخ الإطلاق المتوقع <span class="req">*</span>', fe_req4:"حقل مطلوب.",
+  l_channels:'القنوات المفضلة <span class="req">*</span>', fe_pick2:"اختر قناة واحدة على الأقل.",
+  ch_social:"إعلانات السوشيال", ch_search:"البحث", ch_yt:"يوتيوب / فيديو", ch_prog:"البرمجية (Programmatic)", ch_game:"داخل الألعاب",
+  chnote:"غير متأكد؟ اختر إعلانات السوشيال وسنقترح الباقي في الخطة.",
+  s3eb:"الحملة الأساسية", s3h:"الأرقام الأهم.",
+  l_pobj:'أهداف الحملة الأساسية <span class="req">*</span>', l_pmet:'المقاييس الأساسية للتقييم <span class="req">*</span>',
+  o_aw:"وعي",o_tr:"زيارات",o_ld:"عملاء محتملون",o_en:"تفاعل",o_cv:"تحويلات",o_ai:"تنزيلات التطبيق",o_vv:"مشاهدات فيديو",
+  o_aw2:"وعي",o_tr2:"زيارات",o_ld2:"عملاء محتملون",o_en2:"تفاعل",o_cv2:"تحويلات",o_ai2:"تنزيلات التطبيق",o_vv2:"مشاهدات فيديو",
+  m_imp:"مرات الظهور",m_re:"الوصول",m_vv:"مشاهدات فيديو",m_cl:"نقرات",m_lpv:"مشاهدات صفحة الهبوط",m_ld:"عملاء محتملون",m_cv:"تحويلات",m_ai:"تنزيلات التطبيق",m_en:"تفاعل",
+  m_imp2:"مرات الظهور",m_re2:"الوصول",m_vv2:"مشاهدات فيديو",m_cl2:"نقرات",m_lpv2:"مشاهدات صفحة الهبوط",m_ld2:"عملاء محتملون",m_cv2:"تحويلات",m_ai2:"تنزيلات التطبيق",m_en2:"تفاعل",
+  fe_pick3:"اختر خيارًا واحدًا على الأقل.", fe_pick4:"اختر خيارًا واحدًا على الأقل.",
+  l_ptgt:'الأرقام المستهدفة لهذه المقاييس <span class="req">*</span>', ptgtPh:"مثال: 30 مليون ظهور · تكلفة تنزيل ≤ $0.20", fe_req5:"أعطنا رقمًا نتحداه.",
+  l_pint:'الجمهور — الاهتمامات <span class="req">*</span>', pintPh:"مثال: اللياقة، الصحة، الجري", fe_req6:"حقل مطلوب.",
+  l_page:'الجمهور — الفئة العمرية <span class="req">*</span>', ageYrs:"سنة", ageYrs2:"سنة",
+  l_pgen:'الجمهور — الجنس <span class="req">*</span>', g_b:"الجميع",g_f:"إناث",g_m:"ذكور",g_b2:"الجميع",g_f2:"إناث",g_m2:"ذكور",
+  l_pmkt:'الأسواق <span class="req">*</span>', fe_pick5:"اختر سوقًا واحدًا على الأقل.",
+  mk_eu:"أوروبا",mk_ea:"شرق آسيا",mk_af:"أفريقيا",mk_na:"أمريكا الشمالية",mk_sa:"أمريكا الجنوبية",
+  mk_eu2:"أوروبا",mk_ea2:"شرق آسيا",mk_af2:"أفريقيا",mk_na2:"أمريكا الشمالية",mk_sa2:"أمريكا الجنوبية",
+  l_pdet:'تفاصيل إضافية عن الحملة الأساسية <span class="req">*</span>',
+  pdetPh:"صفحات الهبوط، تواريخ مهمة، عروض، محتوى جاهز، ما نجح سابقًا، ما يجب تجنبه…",
+  fe_req7:"حتى سطر واحد يساعدنا. ماذا يجب أن نعرف؟",
+  est2Title:"تقدير مباشر — ماذا تشتري هذه الميزانية تقريبًا في أسواقك", est2Imp:"مرات الظهور", est2Views:"مشاهدات الفيديو",
+  est2Note:"أرقام استرشادية من معايير ITP Live. الخطة الإعلامية تثبّت الأرقام المضمونة النهائية.",
+  s4eb:"الحملة الثانوية", s4h:"هل لديك حملة ثانية؟",
+  s4lead:"موجة إعادة استهداف، سوق إضافي، أو منتج مختلف. إن كانت حملة واحدة فقط، اترك هذا الخيار مغلقًا وتابع.",
+  tglB:"أضف حملة ثانوية", tglS:" — بأهداف وجمهور وأسواق خاصة بها",
+  l_sobj:'أهداف الحملة الثانوية <span class="req">*</span>', l_smet:'المقاييس الأساسية للحملة الثانوية <span class="req">*</span>',
+  fe_pick6:"اختر خيارًا واحدًا على الأقل.", fe_pick7:"اختر خيارًا واحدًا على الأقل.",
+  l_stgt:'أهداف الأرقام للحملة الثانوية <span class="req">*</span>', stgtPh:"مثال: 500 ألف نقرة بتكلفة ≤ $0.10", fe_req8:"مطلوب عند تفعيل الحملة الثانوية.",
+  l_sint:'جمهور الحملة الثانوية — الاهتمامات <span class="req">*</span>', sintPh:"مثال: مشترون سابقون، جماهير مشابهة", fe_req9:"مطلوب عند تفعيل الحملة الثانوية.",
+  l_sage:'جمهور الحملة الثانوية — الفئة العمرية <span class="req">*</span>', l_sgen:'جمهور الحملة الثانوية — الجنس <span class="req">*</span>',
+  l_smkt:'أسواق الحملة الثانوية <span class="req">*</span>', fe_pick8:"اختر سوقًا واحدًا على الأقل.",
+  l_sdet:'الحملة الثانوية — تفاصيل إضافية <span class="req">*</span>', sdetPh:"ما الذي يختلف في هذه الحملة؟", fe_req10:"مطلوب عند تفعيل الحملة الثانوية.",
+  s5eb:"المراجعة والإرسال", s5h:"اقرأه كما سنقرأه نحن.",
+  s5lead:"هذا بالضبط ما يصل إلى فريق الأداء. إن بدا صحيحًا، أرسله.",
+  specTitle:"موجز الحملة — ورقة المواصفات", send:"أرسل الموجز ←", sending:"جارٍ الإرسال…",
+  dn_eb:"تم استلام الموجز · مرجع ", dn_h:"دخل المحرّك. إليك ما يحدث الآن.",
+  nx1b:"تم تسجيل الموجز لدى فريق الأداء", nx1p:"استراتيجي يقرأ كل سطر. لا ردود آلية، إنسان يخطط لميزانيتك.",
+  nx2n:"3–5 أيام", nx2b:"خطة إعلامية مسعّرة وعرض", nx2p:"ميزانية مفصّلة سطرًا بسطر بأرقام ظهور ومشاهدات ونقرات مضمونة. لا يُصرف شيء قبل موافقتك.",
+  nx3n:"قبل الإطلاق", nx3b:"معاينة الإعلانات والموافقة", nx3p:"ترى كل إعلان تمامًا كما سيظهر، قبل أن يظهر.",
+  nx4n:"+24 ساعة", nx4b:"لوحة المتابعة المباشرة", nx4p:"رابط واحد، محدّث دائمًا. ترى ما نراه.",
+  dn_print:"تحميل ملخص PDF",
+  thL:"فاتح", thD:"داكن",
+  pdf_m:"التسويق الأدائي — موجز الحملة", pdf_ref:"مرجع",
+  pdf_sub:"موجز حملة التسويق الأدائي كما أُرسل إلى ITP Live.",
+  pdf_s1:"01 · الأساسيات", pdf_s2:"02 · الحملة", pdf_s3:"03 · الحملة الأساسية", pdf_s4:"04 · الحملة الثانوية",
+  pdf_est:"التقدير الاسترشادي عند الإرسال", pdf_next:"ما يحدث الآن", pdf_now:"الآن",
+  pdf_conf:"سري · أُعدّ لفريق الأداء في ITP Live",
+  pipeH:"رحلة موجزك", pipe1b:"هذا الموجز", pipe1s:"الأهداف والجمهور والأسواق والميزانية.",
+  pipe2b:"المحرّك", pipe2s:"صنّاع محتوى + إعلانات مدفوعة، مخطط لها وفق معايير المنطقة.",
+  pipe3b:"خطتك الإعلامية", pipe3s:"تكاليف مفصّلة بأرقام مضمونة خلال 3–5 أيام عمل.",
+  pipe4b:"لوحة المتابعة المباشرة", pipe4s:"ترى ما نراه بعد 24 ساعة من الإطلاق.",
+  none:"—", secOff:"لا توجد حملة ثانوية", yrs:"سنة",
+  k_brand:"العلامة التجارية",k_site:"الموقع",k_vertical:"القطاع",k_social:"التواجد الاجتماعي",k_budget:"الميزانية الإجمالية",
+  k_days:"المدة (أيام)",k_launch:"تاريخ الإطلاق",k_channels:"القنوات",
+  k_pobj:"أهداف أساسية",k_pmet:"مقاييس أساسية",k_ptgt:"أرقام مستهدفة",k_paud:"الجمهور الأساسي",k_pmkt:"الأسواق الأساسية",k_pdet:"تفاصيل أساسية",
+  k_sec:"الحملة الثانوية",k_sobj:"أهداف ثانوية",k_smet:"مقاييس ثانوية",k_stgt:"أرقام ثانوية",k_saud:"الجمهور الثانوي",k_smkt:"الأسواق الثانوية",k_sdet:"تفاصيل ثانوية"
+ }
+};
+let LANG = "en";
+function t(k){ return (I[LANG][k] !== undefined ? I[LANG][k] : I.en[k]); }
+function setLang(l){
+  LANG = l;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  document.getElementById("lang-en").classList.toggle("on", l==="en");
+  document.getElementById("lang-ar").classList.toggle("on", l==="ar");
+  document.querySelectorAll("[data-i]").forEach(el=>{ const k=el.getAttribute("data-i"); if(I[LANG][k]!==undefined) el.innerHTML=I[LANG][k]; });
+  document.querySelectorAll("[data-ip]").forEach(el=>{ const k=el.getAttribute("data-ip"); if(I[LANG][k]!==undefined) el.placeholder=I[LANG][k]; });
+  buildRail(); paint(); if(cur===5) buildSpec();
+}
+
+/* ---------- state / nav ---------- */
+const ORDER=[0,1,2,3,4,5];
+let cur=0, maxSeen=0, dirty=false, submitted=false;
+function steps(){ return document.querySelectorAll(".step"); }
+function go(n){
+  cur=n; maxSeen=Math.max(maxSeen,n);
+  steps().forEach(s=>s.classList.toggle("on", +s.dataset.step===n));
+  document.getElementById("done").classList.remove("on");
+  if(n===5) buildSpec();
+  buildRail(); paint();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function next(from){ if(validate(from)) go(from+1); }
+function buildRail(){
+  const host=document.getElementById("railsteps"); host.innerHTML="";
+  t("steps").forEach((nm,i)=>{
+    const b=document.createElement("button");
+    b.className="rstep"+(i===cur?" on":"")+(i<cur?" done":"");
+    b.disabled = i>maxSeen;
+    b.innerHTML=`<span class="n mono">${String(i).padStart(2,"0")}</span><span class="t">${nm}</span>`;
+    b.onclick=()=>{ if(i<=maxSeen) go(i); };
+    host.appendChild(b);
+  });
+}
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const val=id=>($(id).value||"").trim();
+function picks(group){ return [...document.querySelectorAll(`[data-group="${group}"] input:checked`)].map(i=>i.value); }
+function mark(fid, bad){ $(fid).classList.toggle("err", bad); return !bad; }
+
+/* ---------- validation per step ---------- */
+function validate(step){
+  let ok=true;
+  if(step===1){
+    ok &= mark("f-brand", !val("brand"));
+    ok &= mark("f-vertical", !val("vertical"));
+    ok &= mark("f-social", picks("social").length===0);
+  }
+  if(step===2){
+    ok &= mark("f-budget", !(parseFloat(val("budget"))>0));
+    ok &= mark("f-days", !(parseInt(val("days"))>0));
+    ok &= mark("f-launch", !val("launch"));
+    ok &= mark("f-channels", picks("channels").length===0);
+  }
+  if(step===3){
+    ok &= mark("f-p-obj", picks("pObjectives").length===0);
+    ok &= mark("f-p-met", picks("pMetrics").length===0);
+    ok &= mark("f-p-tgt", !val("pTargets"));
+    ok &= mark("f-p-int", !val("pInterest"));
+    ok &= mark("f-p-mkt", picks("pMarkets").length===0);
+    ok &= mark("f-p-det", !val("pDetails"));
+  }
+  if(step===4 && $("hasSec").checked){
+    ok &= mark("f-s-obj", picks("sObjectives").length===0);
+    ok &= mark("f-s-met", picks("sMetrics").length===0);
+    ok &= mark("f-s-tgt", !val("sTargets"));
+    ok &= mark("f-s-int", !val("sInterest"));
+    ok &= mark("f-s-mkt", picks("sMarkets").length===0);
+    ok &= mark("f-s-det", !val("sDetails"));
+  }
+  if(!ok){ const bad=document.querySelector(".f.err"); if(bad) bad.scrollIntoView({block:"center",behavior:"smooth"}); }
+  return !!ok;
+}
+
+/* ---------- brief strength ---------- */
+const REQ=[
+  ()=>!!val("brand"), ()=>!!val("vertical"), ()=>picks("social").length>0,
+  ()=>parseFloat(val("budget"))>0, ()=>parseInt(val("days"))>0, ()=>!!val("launch"), ()=>picks("channels").length>0,
+  ()=>picks("pObjectives").length>0, ()=>picks("pMetrics").length>0, ()=>!!val("pTargets"),
+  ()=>!!val("pInterest"), ()=>picks("pMarkets").length>0, ()=>!!val("pDetails")
+];
+const BONUS=[ ()=>!!val("site"), ()=>$("hasSec").checked && picks("sObjectives").length>0 ];
+function strength(){
+  const got=REQ.filter(f=>f()).length + BONUS.filter(f=>f()).length*0.5;
+  return Math.min(100, Math.round(got/(REQ.length+1)*100));
+}
+
+/* ---------- live estimate ---------- */
+function fmtM(x){
+  if(x>=1e9) return (x/1e9).toFixed(1)+"B";
+  if(x>=1e6) return (x/1e6).toFixed(1)+"M";
+  if(x>=1e3) return Math.round(x/1e3)+"K";
+  return Math.round(x);
+}
+function estimate(){
+  const b=parseFloat(val("budget")); const mkts=picks("pMarkets");
+  if(!(b>0)||mkts.length===0) return null;
+  const usd=b/(FXr[$("cur").value]||1);
+  let lo=0,hi=0;
+  mkts.forEach(m=>{ const r=BENCH[m]||[2.5,6]; lo+=r[0]; hi+=r[1]; });
+  lo/=mkts.length; hi/=mkts.length;
+  const impLo=usd/hi*1000, impHi=usd/lo*1000;
+  return { impLo, impHi, vLo:impLo*VTRr[0], vHi:impHi*VTRr[1] };
+}
+function paint(){
+  const p=strength();
+  $("pct").textContent=p+"%"; $("fill").style.width=p+"%";
+  $("mpfill").style.width=p+"%"; $("mppct").textContent=p+"%";
+  $("mplbl").textContent=String(Math.min(cur,5)).padStart(2,"0")+" / 05";
+  const e=estimate();
+  const box=$("est"), strip=$("eststrip");
+  if(e){
+    $("estImp").textContent=fmtM(e.impLo)+" – "+fmtM(e.impHi);
+    $("estViews").textContent=fmtM(e.vLo)+" – "+fmtM(e.vHi);
+    $("estImp2").textContent=fmtM(e.impLo)+" – "+fmtM(e.impHi);
+    $("estViews2").textContent=fmtM(e.vLo)+" – "+fmtM(e.vHi);
+    box.classList.add("show"); strip.classList.add("show");
+  } else { box.classList.remove("show"); strip.classList.remove("show"); }
+}
+
+/* ---------- age sliders ---------- */
+function wireAge(minId,maxId,readId,fillId){
+  const a=$(minId), b=$(maxId), rd=$(readId), fl=$(fillId);
+  function upd(){
+    let lo=Math.min(+a.value,+b.value), hi=Math.max(+a.value,+b.value);
+    rd.textContent=lo+" – "+(hi>=65?"65+":hi);
+    const span=65-13;
+    fl.style.insetInlineStart=((lo-13)/span*100)+"%";
+    fl.style.width=((hi-lo)/span*100)+"%";
+  }
+  a.addEventListener("input",upd); b.addEventListener("input",upd); upd();
+}
+function ageStr(minId,maxId){ const lo=Math.min(+$(minId).value,+$(maxId).value), hi=Math.max(+$(minId).value,+$(maxId).value); return lo+"-"+(hi>=65?"65+":hi); }
+
+/* ---------- secondary ---------- */
+function toggleSec(){ $("sec-body").classList.toggle("open", $("hasSec").checked); paint(); }
+
+/* ---------- payload (schema mirrors the Google Form 1:1) ---------- */
+function payload(){
+  const sec=$("hasSec").checked;
+  return {
+    form:"ITP_PERFORMANCE_MARKETING_BRIEF", version:"1.0",
+    submittedAt:new Date().toISOString(), language:LANG,
+    client:{
+      brandName:val("brand"), website:val("site")||null, vertical:val("vertical"),
+      socialPresence:picks("social")
+    },
+    campaign:{
+      overallBudget:{ amount:parseFloat(val("budget"))||0, currency:$("cur").value },
+      periodDays:parseInt(val("days"))||0, expectedLaunchDate:val("launch"),
+      preferredChannels:picks("channels")
+    },
+    primary:{
+      objectives:picks("pObjectives"), mainMetrics:picks("pMetrics"), metricTargets:val("pTargets"),
+      audience:{ interests:val("pInterest"), ageRange:ageStr("ageMin","ageMax"), gender:picks("pGender")[0]||"Both" },
+      markets:picks("pMarkets"), additionalDetails:val("pDetails")
+    },
+    secondary: sec ? {
+      objectives:picks("sObjectives"), mainMetrics:picks("sMetrics"), metricTargets:val("sTargets"),
+      audience:{ interests:val("sInterest"), ageRange:ageStr("sAgeMin","sAgeMax"), gender:picks("sGender")[0]||"Both" },
+      markets:picks("sMarkets"), additionalDetails:val("sDetails")
+    } : null,
+    indicativeEstimateShown: estimate(),
+    benchmarksProfile: BENCH_SRC
+  };
+}
+
+/* ---------- review ---------- */
+function line(k,v,dim){ return `<div class="srow"><span class="k">${k}</span><span class="v${dim?" dim":""}">${v||t("none")}</span></div>`; }
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+function buildSpec(){
+  const p=payload(); const B=$("specBody"); const j=a=>a&&a.length?a.join(" · "):t("none");
+  $("specStamp").textContent=new Date().toISOString().slice(0,16).replace("T"," ")+" UTC";
+  let h="";
+  h+=line(t("k_brand"), esc(p.client.brandName));
+  h+=line(t("k_site"), p.client.website?esc(p.client.website):"", !p.client.website);
+  h+=line(t("k_vertical"), esc(p.client.vertical));
+  h+=line(t("k_social"), j(p.client.socialPresence));
+  h+=line(t("k_budget"), p.campaign.overallBudget.amount.toLocaleString("en-US")+" "+p.campaign.overallBudget.currency);
+  h+=line(t("k_days"), p.campaign.periodDays);
+  h+=line(t("k_launch"), p.campaign.expectedLaunchDate);
+  h+=line(t("k_channels"), j(p.campaign.preferredChannels));
+  h+=line(t("k_pobj"), j(p.primary.objectives));
+  h+=line(t("k_pmet"), j(p.primary.mainMetrics));
+  h+=line(t("k_ptgt"), esc(p.primary.metricTargets));
+  h+=line(t("k_paud"), esc(p.primary.audience.interests)+" · "+p.primary.audience.ageRange+" "+t("yrs")+" · "+p.primary.audience.gender);
+  h+=line(t("k_pmkt"), j(p.primary.markets));
+  h+=line(t("k_pdet"), esc(p.primary.additionalDetails));
+  if(p.secondary){
+    h+=line(t("k_sobj"), j(p.secondary.objectives));
+    h+=line(t("k_smet"), j(p.secondary.mainMetrics));
+    h+=line(t("k_stgt"), esc(p.secondary.metricTargets));
+    h+=line(t("k_saud"), esc(p.secondary.audience.interests)+" · "+p.secondary.audience.ageRange+" "+t("yrs")+" · "+p.secondary.audience.gender);
+    h+=line(t("k_smkt"), j(p.secondary.markets));
+    h+=line(t("k_sdet"), esc(p.secondary.additionalDetails));
+  } else {
+    h+=line(t("k_sec"), t("secOff"), true);
+  }
+  B.innerHTML=h;
+}
+
+/* ---------- submit ---------- */
+async function submitBrief(){
+  if(!validate(1)||!validate(2)||!validate(3)||!validate(4)){ return; }
+  const btn=$("sendBtn"); btn.disabled=true; btn.textContent=t("sending");
+  const p=payload();
+  window.__ITP_BRIEF=p;
+  try{ console.log("ITP BRIEF PAYLOAD →", p); }catch(e){}
+  try{
+    if(CONFIG.ENDPOINT){
+      await fetch(CONFIG.ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)});
+    } else {
+      await new Promise(r=>setTimeout(r,900)); // demo latency
+    }
+  }catch(e){ console.warn("Endpoint unreachable — payload kept on window.__ITP_BRIEF", e); }
+  submitted=true; dirty=false;
+  steps().forEach(s=>s.classList.remove("on"));
+  $("ref").textContent="ITP-"+new Date().toISOString().slice(2,10).replace(/-/g,"")+"-"+String(Math.floor(Math.random()*900)+100);
+  $("done").classList.add("on");
+  if(new URLSearchParams(location.search).get("dev")==="1"){
+    $("devout").style.display="block";
+    $("devjson").textContent=JSON.stringify(p,null,2);
+  }
+  btn.disabled=false; btn.textContent=t("send");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- theme ---------- */
+function setTheme(th){
+  document.documentElement.setAttribute("data-theme", th);
+  store.set("itp_theme", th);
+  const l=$("th-l"), d=$("th-d");
+  if(l&&d){ l.classList.toggle("on", th==="light"); d.classList.toggle("on", th==="dark"); }
+}
+
+/* ---------- admin: benchmark control ---------- */
+let admUnlocked=false, admWired=false;
+function openAdmin(){
+  if(CONFIG.ADMIN_CODE && !admUnlocked){
+    const c=window.prompt("ITP admin code:");
+    if(c!==CONFIG.ADMIN_CODE) return;
+    admUnlocked=true;
+  }
+  admBuild(); $("adm").classList.add("on");
+}
+function closeAdmin(){ $("adm").classList.remove("on"); }
+function admBuild(){
+  const tb=$("admRows"); tb.innerHTML="";
+  Object.keys(BENCH).forEach(m=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${m}</td><td><input data-m="${m}" data-b="0" type="number" min="0.1" step="0.1" value="${BENCH[m][0]}"></td><td><input data-m="${m}" data-b="1" type="number" min="0.1" step="0.1" value="${BENCH[m][1]}"></td>`;
+    tb.appendChild(tr);
+  });
+  $("admVtrLo").value=Math.round(VTRr[0]*100); $("admVtrHi").value=Math.round(VTRr[1]*100);
+  $("admFxAed").value=FXr.AED; $("admFxSar").value=FXr.SAR;
+  if(!admWired){ $("adm").addEventListener("input", admTest); admWired=true; }
+  admTest();
+}
+function admRead(){
+  const b=JSON.parse(JSON.stringify(BENCH));
+  document.querySelectorAll("#admRows input").forEach(i=>{
+    const v=parseFloat(i.value); if(v>0) b[i.dataset.m][+i.dataset.b]=v;
+  });
+  b && Object.keys(b).forEach(m=>{ if(b[m][0]>b[m][1]) b[m]=[b[m][1],b[m][0]]; });
+  let lo=parseFloat($("admVtrLo").value)/100, hi=parseFloat($("admVtrHi").value)/100;
+  if(!(lo>0)) lo=0.25; if(!(hi>0)) hi=0.45; if(lo>hi){const t=lo;lo=hi;hi=t;}
+  const fx={USD:1, AED:parseFloat($("admFxAed").value)||3.6725, SAR:parseFloat($("admFxSar").value)||3.75};
+  return { b, v:[lo,hi], fx };
+}
+function admTest(){
+  const d=admRead(), usd=150000, mk=["UAE","KSA"];
+  let lo=0,hi=0; mk.forEach(m=>{ const r=d.b[m]||[2.5,6]; lo+=r[0]; hi+=r[1]; }); lo/=mk.length; hi/=mk.length;
+  const iLo=usd/hi*1000, iHi=usd/lo*1000;
+  $("admTest").textContent=`TEST · $150,000 IN UAE+KSA → ${fmtM(iLo)}–${fmtM(iHi)} IMPRESSIONS · ${fmtM(iLo*d.v[0])}–${fmtM(iHi*d.v[1])} VIDEO VIEWS`;
+}
+function admFlash(msg){ $("admMsg").textContent=msg; setTimeout(()=>{ $("admMsg").textContent=""; }, 2400); }
+function admApply(){
+  const d=admRead();
+  BENCH=d.b; VTRr=d.v; FXr=d.fx;
+  const day=new Date().toISOString().slice(0,10);
+  BENCH_SRC="custom · saved "+day;
+  store.set("itp_bench_v1", JSON.stringify({BENCH, VTR:VTRr, FX:FXr, savedAt:day}));
+  paint(); admFlash("SAVED · ESTIMATE IS LIVE");
+}
+function admReset(){
+  BENCH=JSON.parse(JSON.stringify(CONFIG.BENCH)); VTRr=CONFIG.VTR.slice(); FXr={...CONFIG.FX}; BENCH_SRC="default";
+  store.del("itp_bench_v1"); admBuild(); paint(); admFlash("DEFAULTS RESTORED");
+}
+function admCopy(){
+  const d=admRead();
+  const txt='BENCH: '+JSON.stringify(d.b)+',\nVTR: '+JSON.stringify(d.v)+',\nFX: '+JSON.stringify(d.fx);
+  const done=()=>admFlash("COPIED FOR CONFIG");
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(()=>{ window.prompt("Copy this:", txt); }); }
+  else window.prompt("Copy this:", txt);
+}
+
+/* ---------- PDF summary ---------- */
+function buildPdf(p){
+  const j=a=>a&&a.length?a.join(" · "):t("none");
+  const rows=pairs=>pairs.map(([k,v,dim])=>`<div class="pdR"><span class="k">${k}</span><span class="v${dim?" dim":""}">${v||t("none")}</span></div>`).join("");
+  const est=p.indicativeEstimateShown;
+  const ref=($("ref").textContent||"").trim()||"—";
+  const aud=a=>esc(a.interests)+" · "+a.ageRange+" "+t("yrs")+" · "+a.gender;
+  const sec=p.secondary
+    ? `<div class="pdSec"><div class="pdSecH">${t("pdf_s4")}</div>`+rows([
+        [t("k_sobj"),j(p.secondary.objectives)],[t("k_smet"),j(p.secondary.mainMetrics)],
+        [t("k_stgt"),esc(p.secondary.metricTargets)],[t("k_saud"),aud(p.secondary.audience)],
+        [t("k_smkt"),j(p.secondary.markets)],[t("k_sdet"),esc(p.secondary.additionalDetails)]])+`</div>`
+    : `<div class="pdSec"><div class="pdSecH">${t("pdf_s4")}</div>`+rows([[t("k_sec"),t("secOff"),true]])+`</div>`;
+  $("pdoc").dir = LANG==="ar" ? "rtl" : "ltr";
+  $("pdoc").innerHTML=`
+    <div class="pdH"><img src="${document.querySelector(".topbar img").src}" alt="ITP Live"><span class="m">${t("pdf_m")}</span><span class="grow"></span><span class="ref">${t("pdf_ref")} ${ref}<br>${(p.submittedAt||new Date().toISOString()).slice(0,10)}</span></div>
+    <div class="pdTitle">${esc(p.client.brandName)}</div>
+    <div class="pdSub">${t("pdf_sub")}</div>
+    <div class="pdSec"><div class="pdSecH">${t("pdf_s1")}</div>`+rows([
+      [t("k_brand"),esc(p.client.brandName)],
+      [t("k_site"),p.client.website?esc(p.client.website):"",!p.client.website],
+      [t("k_vertical"),esc(p.client.vertical)],
+      [t("k_social"),j(p.client.socialPresence)]])+`</div>
+    <div class="pdSec"><div class="pdSecH">${t("pdf_s2")}</div>`+rows([
+      [t("k_budget"),p.campaign.overallBudget.amount.toLocaleString("en-US")+" "+p.campaign.overallBudget.currency],
+      [t("k_days"),String(p.campaign.periodDays)],
+      [t("k_launch"),p.campaign.expectedLaunchDate],
+      [t("k_channels"),j(p.campaign.preferredChannels)]])+`</div>
+    <div class="pdSec"><div class="pdSecH">${t("pdf_s3")}</div>`+rows([
+      [t("k_pobj"),j(p.primary.objectives)],
+      [t("k_pmet"),j(p.primary.mainMetrics)],
+      [t("k_ptgt"),esc(p.primary.metricTargets)],
+      [t("k_paud"),aud(p.primary.audience)],
+      [t("k_pmkt"),j(p.primary.markets)],
+      [t("k_pdet"),esc(p.primary.additionalDetails)]])+`</div>
+    ${sec}
+    ${est?`<div class="pdEst"><div class="k">${t("pdf_est")}</div><div class="nums">
+      <span><b>${fmtM(est.impLo)} – ${fmtM(est.impHi)}</b><small>${t("estImpL")}</small></span>
+      <span><b>${fmtM(est.vLo)} – ${fmtM(est.vHi)}</b><small>${t("estViewsL")}</small></span>
+    </div><div class="note">${t("estNote")}</div></div>`:""}
+    <div class="pdTail"><div class="pdNext"><div class="k">${t("pdf_next")}</div><div class="pdNx">
+      <div><span class="n">${t("pdf_now")}</span><b>${t("nx1b")}</b><p>${t("nx1p")}</p></div>
+      <div><span class="n">${t("nx2n")}</span><b>${t("nx2b")}</b><p>${t("nx2p")}</p></div>
+      <div><span class="n">${t("nx3n")}</span><b>${t("nx3b")}</b><p>${t("nx3p")}</p></div>
+      <div><span class="n">${t("nx4n")}</span><b>${t("nx4b")}</b><p>${t("nx4p")}</p></div>
+    </div></div>
+    <div class="pdFoot"><span>ITP LIVE · ITP MEDIA GROUP · PERFORMANCE MARKETING</span><span>${t("pdf_conf")}</span></div></div>`;
+}
+function pdfNow(){
+  const p=window.__ITP_BRIEF||payload();
+  buildPdf(p);
+  setTimeout(()=>window.print(), 60);
+}
+
+/* ---------- wiring ---------- */
+document.addEventListener("input", ()=>{ dirty=true; paint(); });
+document.addEventListener("change", ()=>{ dirty=true; paint(); });
+document.addEventListener("keydown", e=>{
+  if((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==="b"){ e.preventDefault(); openAdmin(); return; }
+  if(e.key==="Escape" && $("adm").classList.contains("on")){ closeAdmin(); return; }
+  if(e.key==="Enter" && !e.shiftKey && cur<5 && e.target.tagName!=="TEXTAREA" && e.target.tagName!=="BUTTON" && !$("adm").classList.contains("on")){
+    e.preventDefault(); if(cur===0) go(1); else next(cur);
+  }
+});
+window.addEventListener("beforeunload", e=>{ if(dirty && !submitted){ e.preventDefault(); e.returnValue=""; } });
+wireAge("ageMin","ageMax","ageRead","ageFill");
+wireAge("sAgeMin","sAgeMax","sAgeRead","sAgeFill");
+setTheme(store.get("itp_theme") || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+buildRail(); go(0); paint();
+if(new URLSearchParams(location.search).get("admin")==="1") openAdmin();
+</script>
+</body>
+</html>
