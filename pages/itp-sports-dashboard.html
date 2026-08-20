@@ -838,9 +838,10 @@ function prepare(){
     const brandCol=state.colMap.brand;
     const lbl={}; CONFIG.brands.forEach(b=>lbl[b.key]=b.label);
     /* Group on the detected brand, not the raw cell, so "DEKA" and
-       "DEKA Middle East" are one brand. Rows matching nothing keep whatever
-       the sheet says (or fall back to Other when there is no Brand column). */
-    state.rows.forEach(r=>{ r.__brand = r.__b ? lbl[r.__b] : (brandCol ? r[brandCol] : 'Other'); });
+       "DEKA Middle East" are one brand. Rows matching none of the configured
+       brands are left blank and drop out of the brand charts and filter, so
+       only the three real brands are ever shown. */
+    state.rows.forEach(r=>{ r.__brand = r.__b ? lbl[r.__b] : ''; });
     state.colMap.brand='__brand';
     state.brandSynthetic=!brandCol; state.brandNormalised=true;
     state.present.add('brand');
@@ -936,8 +937,13 @@ function totals(rows){
 function groupBy(rows,dimKey){
   const col=state.colMap[dimKey]; const g=new Map();
   if(!col)return g;
+  /* the normalised brand column is blank for rows matching no configured
+     brand — those get no bucket at all rather than a "(not set)" one */
+  const drop=col==='__brand';
   rows.forEach(r=>{
-    const v=(r[col]==null||r[col]==='')?'(not set)':String(r[col]).trim();
+    const blank=(r[col]==null||r[col]==='');
+    if(blank&&drop)return;
+    const v=blank?'(not set)':String(r[col]).trim();
     if(!g.has(v))g.set(v,[]); g.get(v).push(r);
   });
   return g;
