@@ -663,8 +663,8 @@ const dkey=d=>d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${
 const dlabel=d=>d?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}):'';
 
 /* ---------- formatting ---------- */
-function money(n){
-  const v = CUR==='USD' ? n/RATE : n;
+function money(n){ return moneyIn(CUR==='USD' ? n/RATE : n); }
+function moneyIn(v){                        // v is already in the displayed currency
   const sym = CUR==='USD' ? '$' : 'AED ';
   const a=Math.abs(v);
   if(a>=1e9) return sym+(v/1e9).toFixed(2)+'B';
@@ -688,6 +688,13 @@ function fmt(key,n){
 function rawVal(key,t){                     // chart-axis value (currency-converted)
   const v=METRICS[key].num(t)||0;
   return MONEY_METRICS.has(key)&&CUR==='USD' ? v/RATE : v;
+}
+/* Chart values come out of rawVal() already converted, so they must be formatted
+   with fmtC — fmt() would divide by the rate a second time. */
+function fmtC(key,n){
+  if(!isFinite(n))n=0;
+  const m=METRICS[key];
+  return (m&&m.kind==='money'&&MONEY_METRICS.has(key)) ? moneyIn(n) : fmt(key,n);
 }
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('on');
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2600);}
@@ -826,11 +833,16 @@ function prepare(){
   resolveBrands();
   /* No Brand column in the sheet? Synthesise one from the detected brand so the
      exec chart, the Brand filter and the brand tabs all keep working. */
-  state.brandSynthetic=false;
-  if(!state.colMap.brand && state.rows.some(r=>r.__b)){
+  state.brandSynthetic=false; state.brandNormalised=false;
+  if(state.rows.some(r=>r.__b)){
+    const brandCol=state.colMap.brand;
     const lbl={}; CONFIG.brands.forEach(b=>lbl[b.key]=b.label);
-    state.rows.forEach(r=>{ r.__brand = r.__b?lbl[r.__b]:'Other'; });
-    state.colMap.brand='__brand'; state.brandSynthetic=true;
+    /* Group on the detected brand, not the raw cell, so "DEKA" and
+       "DEKA Middle East" are one brand. Rows matching nothing keep whatever
+       the sheet says (or fall back to Other when there is no Brand column). */
+    state.rows.forEach(r=>{ r.__brand = r.__b ? lbl[r.__b] : (brandCol ? r[brandCol] : 'Other'); });
+    state.colMap.brand='__brand';
+    state.brandSynthetic=!brandCol; state.brandNormalised=true;
     state.present.add('brand');
     state.dims=DIMENSIONS.filter(d=>state.colMap[d.key]);
   }
@@ -1494,7 +1506,7 @@ function baseOpts(){
 function abbr(n){const a=Math.abs(n);
   if(a>=1e9)return (n/1e9).toFixed(1)+'B'; if(a>=1e6)return (n/1e6).toFixed(1)+'M';
   if(a>=1e3)return (n/1e3).toFixed(a>=1e5?0:1)+'K'; return (a<10&&a%1?n.toFixed(2):Math.round(n).toString());}
-function tipFmt(key){ return ctx=>` ${METRICS[key].label}: ${fmt(key,ctx.parsed.y!=null?ctx.parsed.y:ctx.parsed)}`; }
+function tipFmt(key){ return ctx=>` ${METRICS[key].label}: ${fmtC(key,ctx.parsed.y!=null?ctx.parsed.y:ctx.parsed)}`; }
 
 /* ---------- grouped aggregation for dimension charts ---------- */
 function dimSeries(w,rows){
@@ -1543,7 +1555,7 @@ function drawLine(w,rows,cv){
   o.scales.y.ticks.callback=v=>abbr(v);
   if(ms.length>1)o.scales.y1={position:'right',grid:{display:false},border:{display:false},
     ticks:{color:cssv('--text-dim'),maxTicksLimit:6,callback:v=>abbr(v)},beginAtZero:true};
-  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.dataset.label}: ${fmt(ms[ctx.datasetIndex],ctx.parsed.y)}`,
+  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.dataset.label}: ${fmtC(ms[ctx.datasetIndex],ctx.parsed.y)}`,
     title:it=>{const d=parseDate(it[0].label);return d?d.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}):it[0].label;}};
   o.onClick=(e,el)=>{ if(el.length){const v=labels[el[0].index]; defer(()=>toggleDate(v));} };
   CHARTS.push(new Chart(cv,{type:w.chart==='bar'?'bar':'line',data:{labels:labels,datasets:ds},options:o}));
@@ -1577,7 +1589,7 @@ function drawBar(w,rows,cv){
   o.plugins.legend.display=ds.length>1||horiz===false&&ms.length>1;
   o.plugins.tooltip.callbacks={label:ctx=>{
     const k=ctx.datasetIndex===0?ms[0]:ms[1];
-    return ` ${METRICS[k].label}: ${fmt(k,horiz?ctx.parsed.x:ctx.parsed.y)}`;},
+    return ` ${METRICS[k].label}: ${fmtC(k,horiz?ctx.parsed.x:ctx.parsed.y)}`;},
     afterBody:it=>{const a=arr[it[0].dataIndex];if(!a)return'';
       const extra=[];
       if(metricAvailable('spend')&&ms[0]!=='spend')extra.push('Spend: '+fmt('spend',METRICS.spend.num(a._t)));
@@ -1585,7 +1597,7 @@ function drawBar(w,rows,cv){
       return extra.length?'\n'+extra.join('\n'):'';}};
   o.onClick=(e,el)=>{ if(el.length){const v=labels[el[0].index]; defer(()=>toggleFilter(w.dim,v));} };
   const showVals = n<=10 && ds.length===1;
-  if(showVals) o.plugins.vlab={on:true,horiz,fmt:v=>fmt(ms[0],v)};
+  if(showVals) o.plugins.vlab={on:true,horiz,fmt:v=>fmtC(ms[0],v)};
   if(showVals&&horiz) o.layout={padding:{right:56}};
   if(showVals&&!horiz) o.layout={padding:{top:18}};
   CHARTS.push(new Chart(cv,{type:'bar',data:{labels,datasets:ds},options:o,plugins:showVals?[VLAB]:[]}));
@@ -1604,7 +1616,7 @@ function drawStacked(w,rows,cv){
       return sub.length?rawVal(mk,totals(sub)):0;})}));
   const o=baseOpts();
   o.scales.x.stacked=true; o.scales.y.stacked=true; o.scales.y.ticks.callback=v=>abbr(v);
-  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.dataset.label}: ${fmt(mk,ctx.parsed.y)}`};
+  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.dataset.label}: ${fmtC(mk,ctx.parsed.y)}`};
   o.onClick=(e,el)=>{ if(el.length){const v=labels[el[0].index]; defer(()=>toggleFilter(w.dim,v));} };
   CHARTS.push(new Chart(cv,{type:'bar',data:{labels,datasets:ds},options:o}));
 }
@@ -1621,7 +1633,7 @@ function drawPie(w,rows,cv){
   const o=baseOpts(); delete o.scales; o.interaction={mode:'nearest',intersect:true};
   o.plugins.legend.position='right'; o.plugins.legend.align='center';
   o.plugins.legend.labels.pointStyle='circle'; o.plugins.legend.labels.padding=9;
-  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.label}: ${fmt(mk,ctx.parsed)} (${(ctx.parsed/total*100).toFixed(1)}%)`};
+  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.label}: ${fmtC(mk,ctx.parsed)} (${(ctx.parsed/total*100).toFixed(1)}%)`};
   o.onClick=(e,el)=>{ if(el.length&&!arr[el[0].index]._o){const v=labels[el[0].index]; defer(()=>toggleFilter(w.dim,v));} };
   if(w.type==='doughnut')o.cutout='58%';
   CHARTS.push(new Chart(cv,{type:w.type==='polar'?'polarArea':(w.type==='doughnut'?'doughnut':'pie'),
@@ -1641,7 +1653,7 @@ function drawRadar(w,rows,cv){
   const o=baseOpts(); delete o.scales; o.interaction={mode:'nearest',intersect:false};
   o.scales={r:{angleLines:{color:cssv('--grid')},grid:{color:cssv('--grid')},
     pointLabels:{color:cssv('--text-dim'),font:{size:10.5}},ticks:{display:false},suggestedMin:0,suggestedMax:100}};
-  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.dataset.label} · ${METRICS[ms[ctx.dataIndex]].label}: ${fmt(ms[ctx.dataIndex],raw[ctx.datasetIndex][ctx.dataIndex])}`};
+  o.plugins.tooltip.callbacks={label:ctx=>` ${ctx.dataset.label} · ${METRICS[ms[ctx.dataIndex]].label}: ${fmtC(ms[ctx.dataIndex],raw[ctx.datasetIndex][ctx.dataIndex])}`};
   CHARTS.push(new Chart(cv,{type:'radar',data:{labels:ms.map(k=>METRICS[k].label),datasets:ds},options:o}));
 }
 
@@ -1654,7 +1666,7 @@ function drawFunnel(w,rows,cv){
   o.scales.y.grid={display:false}; o.scales.y.ticks={color:cssv('--text-dim'),autoSkip:false};
   o.plugins.tooltip.callbacks={label:ctx=>{
     const i=ctx.dataIndex, drop=i>0&&vals[i-1]?` · ${(vals[i]/vals[i-1]*100).toFixed(1)}% of previous step`:'';
-    return ` ${fmt(ms[i],vals[i])}${drop}`;}};
+    return ` ${fmtC(ms[i],vals[i])}${drop}`;}};
   CHARTS.push(new Chart(cv,{type:'bar',data:{labels:ms.map(k=>METRICS[k].label),
     datasets:[{data:vals,backgroundColor:ms.map((_,i)=>alpha(pal[i%pal.length],.85)),borderRadius:5,borderSkipped:false,maxBarThickness:34}]},options:o}));
 }
@@ -1751,7 +1763,7 @@ function adminHTML(){
   const mapRow=(key,label,cur,ok)=>`<div class="map-row"><span title="${esc(label)}">${esc(label)}</span>
     <select class="${ok?'ok':''}" onchange="admMap('${key}',this.value)">
       <option value="">— none —</option>
-      ${key==='brand'&&state.brandSynthetic?`<option value="__brand" selected>— auto-detected from campaign names —</option>`:''}
+      ${key==='brand'&&state.brandNormalised?`<option value="__brand" selected>— ${state.brandSynthetic?'auto-detected from campaign names':'grouped by detected brand'} —</option>`:''}
       ${optList(state.headers,cur)}</select></div>`;
   let mapping=`<div class="asec"><h4>Dimensions → sheet columns</h4><div class="map-grid">
       ${DIMENSIONS.map(d=>mapRow(d.key,d.label,state.colMap[d.key],!!state.colMap[d.key])).join('')}
