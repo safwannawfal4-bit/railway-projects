@@ -502,8 +502,13 @@ const CONFIG = {
   accessCode: "ITPSports-2026-R7K4",
   adminCode : "ITPSports-ADMIN-Q9XZ",
   /* ---- DATA SOURCE ---- */
+  /* Live source. The spreadsheet id is read straight through the gviz endpoint by
+     TAB NAME -- the sheet exactly as it is right now, no publish-to-web delay, no
+     gid lookup. Needs the sheet shared as "Anyone with the link · Viewer".
+     If that read fails the published CSV below is used instead (up to ~5 min behind). */
+  sheetId   : "10rv5rahkD0Ue8nxBDxb9iriadOg0DuDh0vTzLuL6vIo",
   sheetBase : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWwwWgZxuYwCt2fvQYSFfbYkOIDVUbTVvPtBUjmRLeTVLACe5n7g77luz5WP6mHF5bRkkFwVyaIoae/pub",
-  sheetTab  : "sheet2",   // tab name to resolve a gid for
+  sheetTab  : "sheet2",   // tab name
   sheetGid  : "",         // optional hard override, e.g. "123456789"
   /* ---- CURRENCY ---- */
   baseCurrency: "AED",
@@ -540,7 +545,7 @@ const DIMENSIONS = [
   {key:'creative_type',label:'Creative Type', syn:['creative type','creative format','asset type','media type','creative_type','ad type']},
   {key:'creative_name',label:'Creative Name', syn:['creative name','creative','ad name','ad','creative_name','asset name','ad creative']},
   /* optional extras — only appear if the column exists in the sheet */
-  {key:'platform',     label:'Platform',      syn:['platform','publisher platform','channel','media platform','network']},
+  {key:'platform',     label:'Platform',      syn:['platform','paltform','publisher platform','channel','media platform','network']},
   {key:'market',       label:'Market',        syn:['market','country','region','geo','location','market name','city']},
   {key:'placement',    label:'Placement',     syn:['placement','platform position','position','impression device','device platform']},
   {key:'adset',        label:'Ad Set',        syn:['ad set name','adset name','ad set','adset','audience','audience name','targeting']}
@@ -765,8 +770,15 @@ async function resolveGid(){
   return '';
 }
 
-async function pullCsv(gid){
-  const res=await fetch(csvUrl(gid),{cache:'no-store'});
+function liveUrl(){
+  const o=srcOverride();
+  const id=(o.id||CONFIG.sheetId||'').trim(); if(!id) return '';
+  const tab=(o.tab||CONFIG.sheetTab||'').trim();
+  const g=o.gid||CONFIG.sheetGid||'';
+  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv`+(g?`&gid=${g}`:(tab?`&sheet=${encodeURIComponent(tab)}`:''))+'&_cb='+Date.now();
+}
+async function pullCsv(gid,url){
+  const res=await fetch(url||csvUrl(gid),{cache:'no-store'});
   if(!res.ok) throw new Error('HTTP '+res.status);
   const csv=await res.text();
   if(/^\s*</.test(csv)) throw new Error('The sheet returned a web page instead of CSV — re-check File → Share → Publish to web → CSV.');
@@ -776,14 +788,21 @@ async function pullCsv(gid){
   return {rows,headers:(p.meta.fields||[]).filter(Boolean)};
 }
 async function fetchRows(){
+  /* 1. live read by tab name */
+  const lu=liveUrl();
+  if(lu){
+    try{ const r=await pullCsv('',lu); state.gid=''; state.srcMode='live'; return r; }
+    catch(err){ console.warn('live sheet read failed, falling back to the published CSV:',err.message); }
+  }
+  /* 2. published CSV, tab resolved to a gid (never a silently different tab) */
   const gid=await resolveGid();
   state.gid=gid;
-  try{ return await pullCsv(gid); }
+  try{ const r=await pullCsv(gid); state.srcMode=gid?'published':'published-first'; return r; }
   catch(err){
     if(!gid) throw err;
     /* a stale or wrong gid should never break the page — fall back to the default sheet */
     localStorage.removeItem(SLUG+'_gid'); state.gid='';
-    return await pullCsv('');
+    const r=await pullCsv(''); state.srcMode='published-first'; return r;
   }
 }
 
@@ -877,6 +896,9 @@ function resolveBrands(){
   CONFIG.brands.forEach(b=>{
     const r=rules[b.key]||{col:'auto',match:b.match};
     const cols=((r.col&&r.col!=='auto')?[r.col]:BRAND_SCAN).map(c=>state.colMap[c]).filter(Boolean);
+    /* the raw Meta "Ad name" carries the whole naming convention even when the
+       split-out Brand cell is blank, so it is always part of the auto scan */
+    if(!(r.col&&r.col!=='auto')){ const an=rawAdNameCol(); if(an&&!cols.includes(an)) cols.push(an); }
     (r.match||[]).map(norm).filter(Boolean).forEach(m=>tests.push({key:b.key,m,cols,len:m.length}));
   });
   tests.sort((a,b)=>b.len-a.len);
@@ -892,6 +914,7 @@ function resolveBrands(){
     }
   });
 }
+function rawAdNameCol(){ return state.headers.find(h=>['ad name','ad','ad_name'].includes(norm(h)))||null; }
 function brandRows(key){ return state.rows.filter(r=>r.__b===key); }
 function brandSourceLabel(key){
   const r=(state.brandRules||{})[key]||{};
@@ -1358,7 +1381,12 @@ function renderAll(){
   $('#periodPill').textContent=periodLabel(rows);
   $('#ftRows').textContent=rows.length.toLocaleString()+' of '+state.rows.length.toLocaleString()+' rows';
   $('#ftUpd').textContent=state.ts?('Updated '+new Date(state.ts).toLocaleString('en-GB')):'';
-  $('#ftSrc').textContent='Live source: Google Sheets · '+(srcOverride().tab||CONFIG.sheetTab)+(state.gid?' (gid '+state.gid+')':'');
+  const tab=srcOverride().tab||CONFIG.sheetTab;
+  $('#ftSrc').textContent=
+    state.srcMode==='live'            ? 'Live source: Google Sheets · '+tab+' · read live' :
+    state.srcMode==='published'       ? 'Source: published CSV · '+tab+' (gid '+state.gid+') · up to 5 min behind' :
+    state.srcMode==='published-first' ? 'Source: published CSV · first tab (tab "'+tab+'" could not be resolved) · up to 5 min behind' :
+                                        'Source: Google Sheets · '+tab;
 
   const widgets=(t.widgets||[]).filter(usableWidget);
   let html=controlBar()+bandHTML()+heroHTML()+(ROLE==='admin'?adminHTML():'');
@@ -1780,7 +1808,8 @@ function adminHTML(){
 
   const o=srcOverride();
   let source=`<div class="asec"><h4>Data source</h4><div class="map-grid">
-      <div class="map-row"><span>Published URL</span><input class="fld" style="flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0" id="srcBase" value="${esc(o.base||CONFIG.sheetBase)}"></div>
+      <div class="map-row"><span>Spreadsheet ID <small style="color:var(--text-faint)">(live read)</small></span><input class="fld" style="flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0" id="srcId" value="${esc(o.id||CONFIG.sheetId||'')}" placeholder="the /d/<id>/ part of the sheet URL"></div>
+      <div class="map-row"><span>Published URL <small style="color:var(--text-faint)">(fallback)</small></span><input class="fld" style="flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0" id="srcBase" value="${esc(o.base||CONFIG.sheetBase)}"></div>
       <div class="map-row"><span>Tab name</span><input style="flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0" id="srcTab" value="${esc(o.tab||CONFIG.sheetTab)}"></div>
       <div class="map-row"><span>gid (optional)</span><input style="flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0" id="srcGid" value="${esc(o.gid||CONFIG.sheetGid||state.gid||'')}" placeholder="auto-detected from the tab name"></div>
       <div class="map-row"><span>AED per 1 USD</span><input type="number" step="0.0001" style="flex:1;padding:5px 7px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11.5px;min-width:0" id="srcRate" value="${RATE}"></div>
@@ -1868,7 +1897,7 @@ function admBrand(key,field,val){
 function admMap(key,col){ if(col)state.colMap[key]=col; else delete state.colMap[key];
   saveMap(); prepare(); renderAll(); toast('Column mapping updated'); }
 function admSaveSrc(){
-  const o={base:$('#srcBase').value.trim(),tab:$('#srcTab').value.trim(),gid:$('#srcGid').value.trim()};
+  const o={id:$('#srcId').value.trim(),base:$('#srcBase').value.trim(),tab:$('#srcTab').value.trim(),gid:$('#srcGid').value.trim()};
   RATE=parseFloat($('#srcRate').value)||CONFIG.usdRate;
   localStorage.setItem(K.src,JSON.stringify(o)); localStorage.removeItem(SLUG+'_gid');
   toast('Reloading from the new source…'); setTimeout(()=>location.reload(),600);
