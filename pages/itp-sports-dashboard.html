@@ -196,6 +196,11 @@ details.fdd>summary .car{font-size:9px;opacity:.6}
 .fpanel .fp-act button:hover{color:var(--text);border-color:var(--border-2)}
 .dt-in{padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-size:12.5px;color:var(--text-dim);outline:none}
 .dt-in:focus{border-color:var(--brand)}
+.seg{display:inline-flex;align-items:center;gap:2px;padding:3px;border-radius:10px;border:1px solid var(--border);background:var(--surface);flex:none}
+.seg .lbl{font-size:10.5px;color:var(--text-faint);letter-spacing:.11em;text-transform:uppercase;font-weight:700;padding:0 6px 0 7px}
+.seg button{padding:5px 9px;border-radius:7px;font-size:12px;font-weight:600;color:var(--text-dim);background:transparent;border:0;cursor:pointer;line-height:1.2}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:var(--brand);color:var(--brand-ink)}
 
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .chips:empty{display:none}
@@ -634,7 +639,7 @@ const METRIC_KEYS = Object.keys(METRICS);
 /* ======================= STATE ======================= */
 let ROLE='client', CUR='AED', RATE=CONFIG.usdRate;
 const state={ rows:[], headers:[], colMap:{}, dims:[], present:new Set(),
-              filters:{}, dateFrom:null, dateTo:null, tab:'exec',
+              filters:{}, dateFrom:null, dateTo:null, period:{year:null,q:null}, tab:'exec',
               searchIdx:[], ts:null, gid:null };
 let CHARTS=[];
 
@@ -1113,9 +1118,36 @@ function toggleFilter(dim,val){
 }
 function setFilter(dim,val){ state.filters[dim]=new Set([val]); renderAll(); }
 function clearDim(dim){ delete state.filters[dim]; renderAll(); }
-function clearAll(){ state.filters={}; state.dateFrom=state.dateTo=null;
+/* ---------- year / quarter period pickers ---------- */
+function dataYears(){
+  const ys=new Set(); state.rows.forEach(r=>{ if(r.__d) ys.add(r.__d.getFullYear()); });
+  return Array.from(ys).sort();
+}
+function applyPeriod(){
+  const {year,q}=state.period;
+  if(!year){ state.dateFrom=state.dateTo=null; }
+  else if(!q){ state.dateFrom=new Date(year,0,1); state.dateTo=new Date(year,11,31); }
+  else { state.dateFrom=new Date(year,(q-1)*3,1); state.dateTo=new Date(year,q*3,0); }
+  syncDateInputs(); renderAll();
+}
+function setYear(y){
+  const yrs=dataYears();
+  state.period.year = y===state.period.year ? null : y;
+  if(!state.period.year) state.period.q=null;
+  applyPeriod();
+}
+function setQuarter(q){
+  const yrs=dataYears();
+  state.period.q = q===state.period.q ? null : q;
+  /* a quarter needs a year — default to the latest year in the sheet */
+  if(state.period.q && !state.period.year) state.period.year = yrs[yrs.length-1]||null;
+  applyPeriod();
+}
+function periodText(){ const {year,q}=state.period; return year ? (q?`Q${q} ${year}`:String(year)) : ''; }
+function clearAll(){ state.filters={}; state.dateFrom=state.dateTo=null; state.period={year:null,q:null};
   const a=$('#dFrom'),b=$('#dTo'); if(a)a.value=''; if(b)b.value=''; renderAll(); }
 function toggleDate(k){
+  state.period={year:null,q:null};
   const d=parseDate(k);
   if(state.dateFrom&&state.dateTo&&dkey(state.dateFrom)===k&&dkey(state.dateTo)===k){state.dateFrom=state.dateTo=null;}
   else{state.dateFrom=d;state.dateTo=d;}
@@ -1302,10 +1334,20 @@ function controlBar(){
   if(hasDate)
     h+=`<span style="display:inline-flex;align-items:center;gap:6px;flex:none">
           <span style="font-size:10.5px;color:var(--text-faint);letter-spacing:.11em;text-transform:uppercase;font-weight:700;padding:0 1px 0 4px">Period</span>
-          <input class="dt-in" id="dFrom" type="date" title="From" onchange="state.dateFrom=this.value?parseDate(this.value):null;renderAll()">
+          <input class="dt-in" id="dFrom" type="date" title="From" onchange="state.period={year:null,q:null};state.dateFrom=this.value?parseDate(this.value):null;renderAll()">
           <span style="color:var(--text-faint);font-size:12px">→</span>
-          <input class="dt-in" id="dTo"   type="date" title="To"   onchange="state.dateTo=this.value?parseDate(this.value):null;renderAll()">
+          <input class="dt-in" id="dTo"   type="date" title="To"   onchange="state.period={year:null,q:null};state.dateTo=this.value?parseDate(this.value):null;renderAll()">
         </span>`;
+  if(hasDate){
+    const yrs=dataYears(), {year,q}=state.period;
+    if(yrs.length)
+      h+=`<span class="seg" title="Filter to a whole year"><span class="lbl">Year</span>
+            <button class="${year?'':'on'}" onclick="setYear(null)">All</button>
+            ${yrs.map(y=>`<button class="${y===year?'on':''}" onclick="setYear(${y})">${y}</button>`).join('')}</span>
+          <span class="seg" title="Filter to a quarter of the selected year"><span class="lbl">Quarter</span>
+            <button class="${q?'':'on'}" onclick="setQuarter(null)">All</button>
+            ${[1,2,3,4].map(n=>`<button class="${n===q?'on':''}" onclick="setQuarter(${n})">Q${n}</button>`).join('')}</span>`;
+  }
   h+='</div>';
   const c=chipsHTML(); if(c)h+=`<div class="chips">${c}</div>`;
   return h+'</div>';
@@ -1322,7 +1364,9 @@ function chipsHTML(){
     const lbl=(DIMENSIONS.find(x=>x.key===d)||{}).label||d;
     set.forEach(v=>{h+=`<span class="chip"><b>${esc(lbl)}</b>${esc(v)}<button onclick="toggleFilter('${esc(d)}',this.dataset.v)" data-v="${esc(v)}">×</button></span>`;});
   });
-  if(state.dateFrom||state.dateTo)
+  if(periodText())
+    h+=`<span class="chip"><b>Period</b>${periodText()}<button onclick="state.period={year:null,q:null};applyPeriod()">×</button></span>`;
+  else if(state.dateFrom||state.dateTo)
     h+=`<span class="chip"><b>Dates</b>${state.dateFrom?dkey(state.dateFrom):'…'} → ${state.dateTo?dkey(state.dateTo):'…'}<button onclick="state.dateFrom=state.dateTo=null;syncDateInputs();renderAll()">×</button></span>`;
   if(h)h+=`<span class="chip clr"><button onclick="clearAll()" style="opacity:1">Clear all ×</button></span>`;
   return h;
