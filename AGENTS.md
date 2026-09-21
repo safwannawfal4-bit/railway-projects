@@ -146,9 +146,56 @@ near-instant build. It:
 - serves assets beside directory-style pages, under `/<slug>/…` on the path URL
   and off the root on a subdomain,
 - answers `/healthz` with `200 ok` on **every** host, for Railway's healthcheck,
+- serves `/robots.txt` as `Disallow: /` on **every** host, and sets
+  `X-Robots-Tag: noindex, nofollow` on every response — see
+  [Keeping pages out of search](#keeping-pages-out-of-search),
 - returns a 404 listing the available pages for an unknown path or subdomain,
 - serves HTML as `no-cache` so a deploy never serves a stale page, and assets
-  with a one-hour cache.
+  with a one-hour cache,
+- compresses text responses with brotli or gzip, whichever the client accepts,
+- gives every response an `ETag`, so `no-cache` revalidates into an empty 304
+  instead of refetching the page.
+
+### Compression and validators
+
+Text goes out brotli-compressed (quality 5) or gzipped, negotiated from
+`Accept-Encoding` with q-values honoured. Already-compressed types — images,
+fonts, PDFs — are sent as-is, and so is anything under 1 KB. These pages are
+mostly inline JSON and markup, so the saving is large: the Philips dashboard is
+1058 KB raw and 381 KB over the wire, and all ten pages together drop from
+4867 KB to 1985 KB.
+
+Compressed output is cached in memory, keyed on the file's size and mtime, so a
+page is compressed once per deploy rather than once per request — about 50ms on
+the first hit, then 2–5ms. A changed file gets a new key, so a deploy can never
+serve a stale body.
+
+The `ETag` is built from size and mtime too, with the encoding appended, since a
+gzip body and a brotli body are different representations and must not share a
+validator. `sendFile` compares it before reading the file, so a client that is
+already current costs a `stat` rather than a megabyte of disk and bandwidth.
+
+None of this changes what a page author does. Write one self-contained file, as
+before.
+
+### Keeping pages out of search
+
+Everything served here is client work that happens to be reachable by link, and
+the index at `/` lists every page by title — so a crawler finding the root would
+enumerate every engagement. The server therefore sends
+`X-Robots-Tag: noindex, nofollow` on every response and serves a blanket
+`Disallow: /` at `/robots.txt`, on every host, before any page routing.
+
+This is deliberately server-wide rather than a `<meta name="robots">` in each
+page: a per-page tag is one more thing to remember for every new file, and the
+generated index and 404 pages could not carry one at all.
+
+**None of it is access control.** It asks well-behaved crawlers not to index;
+it stops nobody from opening a link. If a page needs to be genuinely private,
+it needs real auth, not this.
+
+If a page ever *should* be indexed, that is a deliberate exception — drop the
+header for that slug rather than removing it globally.
 
 Only files inside `pages/` are reachable. Repo files — `server.js`,
 `package.json`, `AGENTS.md` — are not served.

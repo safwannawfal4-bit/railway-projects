@@ -21,6 +21,8 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const zlib = require('node:zlib');
+const crypto = require('node:crypto');
 
 const PORT = process.env.PORT || 3000;
 const PAGES = path.join(__dirname, 'pages');
@@ -225,36 +227,182 @@ function notFoundPage(what) {
   );
 }
 
-function send(req, res, status, type, body, cache) {
-  res.writeHead(status, {
-    'content-type': type,
-    'content-length': Buffer.byteLength(body),
-    'cache-control': cache,
-    'x-content-type-options': 'nosniff',
-  });
-  res.end(req.method === 'HEAD' ? undefined : body);
+// Every page here is client work reachable by link, so none of it belongs in a
+// search index. Set on every response, including the index and 404s, because a
+// per-page <meta> tag is one more thing to remember for each new page.
+const BASE_HEADERS = {
+  'x-content-type-options': 'nosniff',
+  'x-robots-tag': 'noindex, nofollow',
+};
+
+// Text is most of what this serves and compresses hard; images, fonts and PDFs
+// are already compressed, so running them through brotli only burns CPU.
+const isCompressible = (type) => /^text\/|\+xml|\/(json|javascript)\b/.test(type);
+const MIN_COMPRESS = 1024;
+
+// q5 is the knee of the curve for these pages: 1.06 MB -> 382 KB in 39ms, where
+// q11 spends 1.6s to reach 348 KB. Output is cached per file version, but the
+// first visitor after a deploy pays this, so it has to stay quick.
+const BR_QUALITY = 5;
+
+// `${file}|${encoding}` -> { tag, body }. Bounded, roughly LRU. A tag that no
+// longer matches the file on disk just means we compress it again.
+const CACHE_MAX = 64;
+const encoded = new Map();
+
+function cached(key, tag) {
+  const hit = encoded.get(key);
+  if (!hit || hit.tag !== tag) return null;
+  encoded.delete(key); // re-insert so the most recently used sorts last
+  encoded.set(key, hit);
+  return hit.body;
 }
 
-const notFound = (req, res, what) =>
-  send(req, res, 404, 'text/html; charset=utf-8', notFoundPage(what), 'no-store');
+function cache(key, tag, body) {
+  encoded.set(key, { tag, body });
+  while (encoded.size > CACHE_MAX) encoded.delete(encoded.keys().next().value);
+}
+
+// Honour q-values: some clients send "gzip, br;q=0" to opt out of one of them.
+function pickEncoding(req) {
+  const header = req.headers['accept-encoding'];
+  if (!header) return null;
+
+  const weights = {};
+  for (const part of String(header).split(',')) {
+    const [name, ...params] = part.trim().split(';');
+    if (!name) continue;
+    const q = params.map((p) => /^\s*q=([\d.]+)\s*$/i.exec(p)).find(Boolean);
+    weights[name.trim().toLowerCase()] = q ? parseFloat(q[1]) : 1;
+  }
+
+  const score = (n) => weights[n] ?? weights['*'] ?? 0;
+  if (score('br') > 0 && score('br') >= score('gzip')) return 'br';
+  return score('gzip') > 0 ? 'gzip' : null;
+}
+
+const negotiate = (req, type, size) =>
+  isCompressible(type) && size >= MIN_COMPRESS ? pickEncoding(req) : null;
+
+// Resolves to null if compression fails, and the caller falls back to identity.
+function compress(enc, body) {
+  return new Promise((resolve) => {
+    const done = (err, out) => resolve(err ? null : out);
+    if (enc === 'br') {
+      const params = {
+        [zlib.constants.BROTLI_PARAM_QUALITY]: BR_QUALITY,
+        [zlib.constants.BROTLI_PARAM_SIZE_HINT]: body.length,
+      };
+      zlib.brotliCompress(body, { params }, done);
+    } else {
+      zlib.gzip(body, { level: 6 }, done);
+    }
+  });
+}
+
+// Size and mtime identify a build of a file well enough here, and cost a stat
+// rather than a read of the whole thing.
+const fileTag = (st) => `${st.size.toString(36)}-${Math.floor(st.mtimeMs).toString(36)}`;
+const bodyTag = (body) => crypto.createHash('sha1').update(body).digest('base64url').slice(0, 16);
+
+// The encoding is part of what the tag identifies, so a gzip client and a
+// brotli client must not share one.
+const etagOf = (tag, enc) => `"${tag}-${enc || 'id'}"`;
+
+function isFresh(req, etag) {
+  const header = req.headers['if-none-match'];
+  if (!header) return false;
+  return String(header)
+    .split(',')
+    .some((t) => t.trim().replace(/^W\//, '') === etag);
+}
+
+function notModified(req, res, etag, cacheControl, type) {
+  res.writeHead(304, {
+    ...BASE_HEADERS,
+    etag,
+    'cache-control': cacheControl,
+    ...(isCompressible(type) ? { vary: 'accept-encoding' } : {}),
+  });
+  res.end();
+}
+
+// `opts.tag` enables validators, `opts.key` caches the compressed result, and
+// `opts.enc` lets a caller that already negotiated skip doing it twice.
+async function send(req, res, status, type, body, cacheControl, opts = {}) {
+  const buf = Buffer.isBuffer(body) ? body : Buffer.from(body);
+  const { tag = null, key = null } = opts;
+  const enc = 'enc' in opts ? opts.enc : negotiate(req, type, buf.length);
+
+  const headers = { ...BASE_HEADERS, 'content-type': type, 'cache-control': cacheControl };
+  if (isCompressible(type)) headers.vary = 'accept-encoding';
+
+  if (tag) {
+    const etag = etagOf(tag, enc);
+    headers.etag = etag;
+    if (isFresh(req, etag)) {
+      notModified(req, res, etag, cacheControl, type);
+      return;
+    }
+  }
+
+  let out = buf;
+  if (enc) {
+    const ck = key && `${key}|${enc}`;
+    let hit = ck && tag ? cached(ck, tag) : null;
+    if (!hit) {
+      hit = await compress(enc, buf);
+      if (hit && ck && tag) cache(ck, tag, hit);
+    }
+    if (hit) {
+      headers['content-encoding'] = enc;
+      out = hit;
+    }
+  }
+
+  headers['content-length'] = out.length;
+  res.writeHead(status, headers);
+  res.end(req.method === 'HEAD' ? undefined : out);
+}
+
+function notFound(req, res, what) {
+  const body = Buffer.from(notFoundPage(what));
+  send(req, res, 404, 'text/html; charset=utf-8', body, 'no-store', { tag: bodyTag(body) });
+}
 
 function sendFile(req, res, file) {
-  fs.readFile(file, (err, body) => {
-    if (err) {
-      console.error(`failed to read ${file}: ${err.message}`);
+  fs.stat(file, (err, st) => {
+    if (err || !st.isFile()) {
+      console.error(`failed to stat ${file}: ${err ? err.message : 'not a regular file'}`);
       send(req, res, 500, 'text/plain; charset=utf-8', 'internal error', 'no-store');
       return;
     }
+
     const ext = path.extname(file).toLowerCase();
-    send(
-      req,
-      res,
-      200,
-      MIME[ext] || 'application/octet-stream',
-      body,
-      // Never cache the HTML, or a deploy keeps serving the old page.
-      ext === '.html' ? 'no-cache' : 'public, max-age=3600',
-    );
+    const type = MIME[ext] || 'application/octet-stream';
+    // Never cache the HTML, or a deploy keeps serving the old page. "no-cache"
+    // still revalidates rather than refetching, and the ETag turns that
+    // revalidation into an empty 304.
+    const cacheControl = ext === '.html' ? 'no-cache' : 'public, max-age=3600';
+    const tag = fileTag(st);
+    const enc = negotiate(req, type, st.size);
+
+    // A client that already has this version needs none of the bytes, so answer
+    // before reading a megabyte off disk.
+    const etag = etagOf(tag, enc);
+    if (isFresh(req, etag)) {
+      notModified(req, res, etag, cacheControl, type);
+      return;
+    }
+
+    fs.readFile(file, (readErr, body) => {
+      if (readErr) {
+        console.error(`failed to read ${file}: ${readErr.message}`);
+        send(req, res, 500, 'text/plain; charset=utf-8', 'internal error', 'no-store');
+        return;
+      }
+      send(req, res, 200, type, body, cacheControl, { tag, key: file, enc });
+    });
   });
 }
 
@@ -270,7 +418,7 @@ function sendAsset(req, res, page, rest) {
 
 const server = http.createServer((req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.writeHead(405, { allow: 'GET, HEAD' }).end();
+    res.writeHead(405, { ...BASE_HEADERS, allow: 'GET, HEAD' }).end();
     return;
   }
 
@@ -285,6 +433,16 @@ const server = http.createServer((req, res) => {
   // Must answer on every host, before any page routing.
   if (pathname === '/healthz') {
     send(req, res, 200, 'text/plain; charset=utf-8', 'ok', 'no-store');
+    return;
+  }
+
+  // Likewise on every host: a crawler reaching a subdomain must not have to
+  // find its way to the root to learn the whole service is off limits.
+  if (pathname === '/robots.txt') {
+    const body = 'User-agent: *\nDisallow: /\n';
+    send(req, res, 200, 'text/plain; charset=utf-8', body, 'public, max-age=3600', {
+      tag: bodyTag(body),
+    });
     return;
   }
 
@@ -314,7 +472,8 @@ const server = http.createServer((req, res) => {
 
   // Path mode.
   if (segments.length === 0) {
-    send(req, res, 200, 'text/html; charset=utf-8', indexPage(), 'no-cache');
+    const body = Buffer.from(indexPage());
+    send(req, res, 200, 'text/html; charset=utf-8', body, 'no-cache', { tag: bodyTag(body) });
     return;
   }
 
@@ -336,6 +495,7 @@ const server = http.createServer((req, res) => {
   if (page.dir && !pathname.endsWith('/')) {
     const body = `moved to /${slug}/`;
     res.writeHead(301, {
+      ...BASE_HEADERS,
       location: `/${slug}/`,
       'content-type': 'text/plain; charset=utf-8',
       'content-length': Buffer.byteLength(body),
