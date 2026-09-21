@@ -357,6 +357,15 @@ async function send(req, res, status, type, body, cacheControl, opts = {}) {
     if (hit) {
       headers['content-encoding'] = enc;
       out = hit;
+    } else if (tag) {
+      // Compression failed, so the body going out is the identity one and must
+      // carry the identity validator — never a "-br" tag on uncompressed bytes.
+      const etag = etagOf(tag, null);
+      headers.etag = etag;
+      if (isFresh(req, etag)) {
+        notModified(req, res, etag, cacheControl, type);
+        return;
+      }
     }
   }
 
