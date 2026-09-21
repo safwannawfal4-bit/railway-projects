@@ -23,7 +23,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | [`jays-sports-diner-dashboard.html`](pages/jays-sports-diner-dashboard.html)     | [/jays-sports-diner-dashboard](https://railway-projects-production-0ea1.up.railway.app/jays-sports-diner-dashboard)     | Gated marketing scoreboard for Jay's Sports Diner |
 | [`itp-sports-dashboard.html`](pages/itp-sports-dashboard.html)                   | [/itp-sports-dashboard](https://railway-projects-production-0ea1.up.railway.app/itp-sports-dashboard)                   | Gated paid media dashboard for ITP Sports (Spartan, Tough Mudder, DEKA) |
 | [`itp-performance-marketing-brief.html`](pages/itp-performance-marketing-brief.html) | [/itp-performance-marketing-brief](https://railway-projects-production-0ea1.up.railway.app/itp-performance-marketing-brief) | ITP Live performance marketing brief intake form (EN/AR, live estimate) |
-| [`philips-tiktok-dashboard.html`](pages/philips-tiktok-dashboard.html)             | [/philips-tiktok-dashboard](https://railway-projects-production-0ea1.up.railway.app/philips-tiktok-dashboard)             | Gated TikTok paid performance dashboard for Philips KSA (ITP Live) |
+| [`philips-tiktok-dashboard.html`](pages/philips-tiktok-dashboard.html)             | [/philips-tiktok-dashboard](https://railway-projects-production-0ea1.up.railway.app/philips-tiktok-dashboard)             | Gated TikTok paid performance dashboard for Philips KSA (ITP Live). Data refreshes daily at 13:00 Beirut from a Google Sheet via [`feeds/`](feeds/philips-tiktok-dashboard.js) |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.

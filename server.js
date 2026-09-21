@@ -26,6 +26,7 @@ const crypto = require('node:crypto');
 
 const PORT = process.env.PORT || 3000;
 const PAGES = path.join(__dirname, 'pages');
+const FEEDS = path.join(__dirname, 'feeds');
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 const PAGE_DOMAINS = (process.env.PAGE_DOMAIN || '')
@@ -415,6 +416,124 @@ function sendFile(req, res, file) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Live data feeds. feeds/<slug>.js gives the page of the same name a data.json
+// that the server rebuilds from a remote source once a day. The page fetches
+// it same-origin and keeps its embedded copy as the fallback, so a feed that is
+// down degrades to yesterday's page rather than a broken one. See AGENTS.md.
+//
+// A feed module exports:
+//   url    what to fetch
+//   at     { hour, minute, timeZone } of the daily refresh, in that zone
+//   build  (text, now) => the object to serve; throws if the source is unusable
+// ---------------------------------------------------------------------------
+
+const FEED_TIMEOUT_MS = 60_000;
+const FEED_RETRY_MS = 10 * 60_000;
+const FEED_TICK_MS = 30_000;
+
+// slug -> { slug, url, at, build, body, tag, day, retryAt }
+const feeds = new Map();
+
+function loadFeeds() {
+  let names;
+  try {
+    names = fs.readdirSync(FEEDS);
+  } catch {
+    return;
+  }
+  for (const name of names) {
+    if (!name.endsWith('.js')) continue;
+    const slug = name.slice(0, -'.js'.length);
+    if (!SLUG_RE.test(slug)) continue;
+    try {
+      const mod = require(path.join(FEEDS, name));
+      if (typeof mod.url !== 'string' || typeof mod.build !== 'function' || !mod.at) {
+        throw new Error('must export url, at and build');
+      }
+      localClock(mod.at.timeZone); // throws on a zone Intl does not know
+      feeds.set(slug, { slug, url: mod.url, at: mod.at, build: mod.build, body: null, tag: null });
+    } catch (err) {
+      console.error(`feed ${slug}: not loaded: ${err.message}`);
+    }
+  }
+}
+
+// Wall-clock day and minute-of-day in a zone. Asking Intl on every tick, rather
+// than computing one long timeout, is what keeps "13:00" right across DST.
+function localClock(timeZone, now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const p = Object.fromEntries(parts.map((x) => [x.type, x.value]));
+  return { day: `${p.year}-${p.month}-${p.day}`, minutes: Number(p.hour) * 60 + Number(p.minute) };
+}
+
+async function refreshFeed(feed, why) {
+  const started = Date.now();
+  try {
+    const res = await fetch(feed.url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
+    });
+    if (!res.ok) throw new Error(`source answered ${res.status}`);
+    const body = Buffer.from(JSON.stringify(feed.build(await res.text(), new Date())));
+    feed.body = body;
+    feed.tag = bodyTag(body);
+    feed.retryAt = null;
+    console.log(`feed ${feed.slug}: refreshed (${why}), ${body.length} bytes in ${Date.now() - started}ms`);
+  } catch (err) {
+    // Keep serving what we have. A bad day at the source must not blank the page.
+    feed.retryAt = Date.now() + FEED_RETRY_MS;
+    console.error(`feed ${feed.slug}: refresh failed (${why}): ${err.message}; retrying in 10 min`);
+  }
+}
+
+function tickFeeds() {
+  for (const feed of feeds.values()) {
+    const { day, minutes } = localClock(feed.at.timeZone);
+    const due = minutes >= feed.at.hour * 60 + (feed.at.minute || 0);
+    if (due && feed.day !== day) {
+      feed.day = day;
+      refreshFeed(feed, 'daily');
+    } else if (feed.retryAt && Date.now() >= feed.retryAt) {
+      feed.retryAt = null;
+      refreshFeed(feed, 'retry');
+    }
+  }
+}
+
+function startFeeds() {
+  loadFeeds();
+  for (const feed of feeds.values()) {
+    // The boot fetch already covers today if today's slot has passed.
+    const { day, minutes } = localClock(feed.at.timeZone);
+    if (minutes >= feed.at.hour * 60 + (feed.at.minute || 0)) feed.day = day;
+    refreshFeed(feed, 'boot');
+  }
+  if (feeds.size) setInterval(tickFeeds, FEED_TICK_MS).unref();
+}
+
+function sendFeed(req, res, feed) {
+  if (!feed.body) {
+    send(req, res, 503, 'text/plain; charset=utf-8', 'feed not loaded yet', 'no-store');
+    return;
+  }
+  send(req, res, 200, 'application/json; charset=utf-8', feed.body, 'no-cache', {
+    tag: feed.tag,
+    key: `feed:${feed.slug}`,
+  });
+}
+
+const isFeedRequest = (page, rest) =>
+  rest.length === 1 && rest[0] === 'data.json' && feeds.has(page.slug);
+
 // Serve an asset sitting beside a directory-style page.
 function sendAsset(req, res, page, rest) {
   if (!page.dir) return notFound(req, res, '/' + rest.join('/'));
@@ -475,6 +594,7 @@ const server = http.createServer((req, res) => {
   // hang directly off the root.
   if (host) {
     if (segments.length === 0) sendFile(req, res, host.page.file);
+    else if (isFeedRequest(host.page, segments)) sendFeed(req, res, feeds.get(host.page.slug));
     else sendAsset(req, res, host.page, segments);
     return;
   }
@@ -495,7 +615,8 @@ const server = http.createServer((req, res) => {
   }
 
   if (rest.length > 0) {
-    sendAsset(req, res, page, rest);
+    if (isFeedRequest(page, rest)) sendFeed(req, res, feeds.get(slug));
+    else sendAsset(req, res, page, rest);
     return;
   }
 
@@ -530,4 +651,9 @@ server.listen(PORT, '0.0.0.0', () => {
       ? `subdomain routing scoped to: ${PAGE_DOMAINS.map((d) => `*.${d}`).join(', ')}`
       : 'subdomain routing unscoped (set PAGE_DOMAIN to pin it to your wildcard zone)',
   );
+  startFeeds();
+  for (const f of feeds.values()) {
+    const hhmm = `${String(f.at.hour).padStart(2, '0')}:${String(f.at.minute || 0).padStart(2, '0')}`;
+    console.log(`feed ${f.slug}: /${f.slug}/data.json, refreshed daily at ${hhmm} ${f.at.timeZone}`);
+  }
 });

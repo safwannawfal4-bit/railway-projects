@@ -45,6 +45,8 @@ railway-projects/
 ├── server.js            # router; zero dependencies
 ├── package.json         # start script + engines. No dependencies.
 ├── railway.json         # build/deploy config for the single service
+├── feeds/               # optional daily data feed per page (see below)
+│   └── philips-tiktok-dashboard.js  ->  /philips-tiktok-dashboard/data.json
 └── pages/
     ├── _template.html   # starter. Not published (see below).
     ├── hello-world.html         ->  /hello-world
@@ -154,7 +156,9 @@ near-instant build. It:
   with a one-hour cache,
 - compresses text responses with brotli or gzip, whichever the client accepts,
 - gives every response an `ETag`, so `no-cache` revalidates into an empty 304
-  instead of refetching the page.
+  instead of refetching the page,
+- rebuilds `<slug>/data.json` once a day for any page that has a module in
+  `feeds/` — see [Live data feeds](#live-data-feeds).
 
 ### Compression and validators
 
@@ -197,8 +201,59 @@ it needs real auth, not this.
 If a page ever *should* be indexed, that is a deliberate exception — drop the
 header for that slug rather than removing it globally.
 
-Only files inside `pages/` are reachable. Repo files — `server.js`,
-`package.json`, `AGENTS.md` — are not served.
+### Live data feeds
+
+Most pages are a snapshot: the data is embedded and changes when someone
+commits a new file. A page whose numbers live in a spreadsheet that keeps
+moving can have a **feed** instead — `feeds/<slug>.js`, named after the page.
+The server fetches the feed's source at boot and then once a day, runs the
+module's `build` over it, and serves the result at `/<slug>/data.json` (or
+`/data.json` on the page's subdomain). Nothing is committed and nothing
+redeploys; the refreshed data is held in memory.
+
+A feed module exports three things:
+
+```js
+module.exports = {
+  url: 'https://docs.google.com/spreadsheets/d/<id>/export?format=csv',
+  at: { hour: 13, minute: 0, timeZone: 'Asia/Beirut' }, // daily, in that zone
+  build(text, now) { /* return the object to serve; throw if unusable */ },
+};
+```
+
+Rules that keep this safe:
+
+- **The page must still work alone.** It embeds a full copy of the data and
+  fetches `data.json` on top: `location.pathname.replace(/\/+$/, '') +
+  '/data.json'`, which resolves on both the path URL and the subdomain. Any
+  failure — 503 before the first fetch lands, a timeout, the file opened from
+  disk — falls back to the embedded copy. Same-origin only, so the
+  [no external requests](#writing-the-html) rule still holds: the visitor's
+  browser never talks to Google.
+- **A failed refresh keeps the last good data** and retries every 10 minutes.
+  `build` should throw on a source it does not recognise (missing column, no
+  rows) rather than return something half-right, so a broken sheet shows
+  yesterday's numbers, not wrong ones.
+- **The schedule is wall-clock time in the feed's zone**, checked against
+  `Intl` every 30 seconds rather than computed as one long timeout, so it stays
+  at 13:00 across DST changes. A restart refetches immediately.
+- **The source must be readable without a login.** For a Google Sheet that
+  means *Share → Anyone with the link → Viewer*. A restricted sheet answers
+  401 and the feed logs `source answered 401`. If a source ever needs a
+  credential, it goes in a Railway variable per
+  [Configuration and secrets](#configuration-and-secrets), never in the feed.
+- Feeds are Node stdlib only, like the server. `feeds/` is not served.
+- When you change `build`, refresh the page's embedded copy from the same
+  function so the fallback and the live shape cannot drift apart.
+
+The one feed today is `philips-tiktok-dashboard`: a raw TikTok Ads Manager
+export (day × ad × age × gender) in a Google Sheet, refreshed at 13:00
+Asia/Beirut. Its `build` sums rows that share a key (one ad name runs in
+several ad groups), drops ads with no impressions and no spend, and derives
+flights from paid-delivery days more than 21 days apart.
+
+Only files inside `pages/` are reachable, plus each feed's `data.json`. Repo
+files — `server.js`, `package.json`, `AGENTS.md`, `feeds/` — are not served.
 
 ### Own subdomain per page
 
@@ -298,4 +353,8 @@ repository owner's standing instruction; don't create a branch "to be safe."
 - If you touched routing, check both modes:
   `curl -H 'Host: my-page.pages.example.com' localhost:3000/` and
   `curl localhost:3000/my-page`.
+- If you touched a feed or the page it serves: the startup log should show
+  `feed <slug>: refreshed (boot)`, `curl localhost:3000/<slug>/data.json`
+  should return the JSON, and the page should render both with the feed up and
+  with it failing (it falls back to the embedded copy).
 - Check that no secret or `.env` file is staged.
