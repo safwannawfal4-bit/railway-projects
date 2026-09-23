@@ -25,6 +25,7 @@ pages/pricing.html   ->   https://<domain>/pricing
 | [`itp-performance-marketing-brief.html`](pages/itp-performance-marketing-brief.html) | [/itp-performance-marketing-brief](https://railway-projects-production-0ea1.up.railway.app/itp-performance-marketing-brief) | ITP Live performance marketing brief intake form (EN/AR, live estimate) |
 | [`philips-tiktok-dashboard.html`](pages/philips-tiktok-dashboard.html)             | [/philips-tiktok-dashboard](https://railway-projects-production-0ea1.up.railway.app/philips-tiktok-dashboard)             | Gated TikTok paid performance dashboard for Philips KSA (ITP Live). Data refreshes daily at 13:00 Beirut from a Google Sheet via [`feeds/`](feeds/philips-tiktok-dashboard.js) |
 | [`dir-performance-dashboard.html`](pages/dir-performance-dashboard.html)         | [/dir-performance-dashboard](https://railway-projects-production-0ea1.up.railway.app/dir-performance-dashboard)         | Gated three-level performance dashboard for Dubai Investment Real Estate (ITP Live) |
+| [`toprides-campaign-dashboard.html`](pages/toprides-campaign-dashboard.html)     | [/toprides-campaign-dashboard](https://railway-projects-production-0ea1.up.railway.app/toprides-campaign-dashboard)     | Gated three-phase campaign dashboard for TopRides (ITP Live) |
 
 `/` lists them all automatically — the table above is just for browsing on
 GitHub.
